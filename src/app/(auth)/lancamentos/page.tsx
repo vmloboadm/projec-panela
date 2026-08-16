@@ -6,6 +6,7 @@ import { Loading, EmptyState, Modal, CategoryPicker } from '@/app/components/Sha
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
+import { NotebookText, BarChart3, X, ChevronRight, Plus, Pencil, Trash2, Clock } from 'lucide-react'
 
 const CORES = ['#e74c3c', '#f39c12', '#2ecc71', '#3498db', '#9b59b6', '#1abc9c', '#e67e22', '#7f8c8d']
 
@@ -128,7 +129,7 @@ function LancamentosInner() {
   return <>
     <div style={{ marginBottom: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-        <span style={{ fontWeight: 600, fontSize: 15 }}>📋 Lançamentos</span>
+        <span style={{ fontWeight: 600, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}><NotebookText aria-hidden="true" size={15} color="var(--muted)" /> Lançamentos</span>
         <select value={periodo} onChange={e => setPeriodo(e.target.value as Periodo)} className="form-select" style={{ marginLeft: 'auto', fontSize: 12 }}>
           <option value="hoje">Hoje</option>
           <option value="semana">Esta semana</option>
@@ -151,7 +152,7 @@ function LancamentosInner() {
 
     {categoriaUrl && <div className="insight-card" style={{ fontSize: 12, marginBottom: 8 }}>
       Filtrando por: <strong>{categoriaUrl}</strong>
-      <button onClick={() => router.push('/lancamentos')} style={{ marginLeft: 8, background: 'transparent', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: 11 }}>✕ Limpar</button>
+      <button onClick={() => router.push('/lancamentos')} style={{ marginLeft: 8, background: 'transparent', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: 11 }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><X aria-hidden="true" size={11} /> Limpar</span></button>
     </div>}
 
     <div className="summary-grid" style={{ marginBottom: 12 }}>
@@ -161,7 +162,7 @@ function LancamentosInner() {
     </div>
 
     {agrupados.length > 0 && <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 12, border: '1px solid var(--border)', marginBottom: 12 }}>
-      <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 6 }}>📊 Distribuição por Categoria</div>
+      <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}><BarChart3 aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Distribuição por Categoria</div>
       <ResponsiveContainer width="100%" height={120}>
         <PieChart>
           <Pie data={agrupados} dataKey="total" nameKey="categoria" cx="50%" cy="50%" outerRadius={50} innerRadius={25}>
@@ -176,11 +177,11 @@ function LancamentosInner() {
       const isExp = expandidos[g.categoria] || false
       return <div key={g.categoria} style={{ background: 'var(--surface)', borderRadius: 10, border: '1px solid var(--border)', marginBottom: 8, overflow: 'hidden' }}>
         <div onClick={() => setExpandidos(prev => ({ ...prev, [g.categoria]: !prev[g.categoria] }))} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', cursor: 'pointer' }}>
-          <span style={{ fontSize: 12, transform: isExp ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▶</span>
+          <span style={{ fontSize: 12, transform: isExp ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-flex' }}><ChevronRight aria-hidden="true" size={12} /></span>
           <span style={{ flex: 1, fontWeight: 600, fontSize: 13 }}>{g.categoria}</span>
           <span style={{ fontSize: 12, color: 'var(--muted)' }}>{g.percentual}%</span>
           <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--vermelho)' }}>{fmtCurrency(g.total)}</span>
-          <button onClick={(e) => { e.stopPropagation(); router.push(`/novo-lancamento?categoria=${encodeURIComponent(g.categoria)}`) }} style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: 16, cursor: 'pointer' }}>➕</button>
+          <button onClick={(e) => { e.stopPropagation(); router.push(`/novo-lancamento?categoria=${encodeURIComponent(g.categoria)}`) }} aria-label="Novo lançamento nesta categoria" style={{ background: 'transparent', border: 'none', color: 'var(--accent)', fontSize: 16, cursor: 'pointer' }}><Plus aria-hidden="true" size={16} /></button>
         </div>
         {isExp && <div style={{ borderTop: '1px solid var(--border)', padding: '6px 12px' }}>
           {g.itens.map((item: any) => <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
@@ -190,8 +191,8 @@ function LancamentosInner() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 13, fontWeight: 600 }}>{fmtCurrency(item.valor)}</span>
-              <button onClick={() => abrirEdicao(item)} title="Editar" style={{ background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: 12 }}>✏️</button>
-              <button onClick={() => { if (confirm('Excluir este lançamento?')) deleteMutation.mutate(item.id) }} title="Excluir" style={{ background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: 12 }}>🗑️</button>
+              <button onClick={() => abrirEdicao(item)} title="Editar" aria-label="Editar" style={{ background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: 12 }}><Pencil aria-hidden="true" size={12} /></button>
+              <button onClick={() => { if (confirm('Excluir este lançamento?')) deleteMutation.mutate(item.id) }} title="Excluir" aria-label="Excluir" style={{ background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: 12 }}><Trash2 aria-hidden="true" size={12} /></button>
             </div>
           </div>)}
         </div>}
@@ -203,10 +204,10 @@ function LancamentosInner() {
       <span style={{ fontWeight: 700, fontSize: 16, color: lucroPeriodo >= 0 ? 'var(--verde)' : 'var(--vermelho)' }}>{fmtCurrency(lucroPeriodo)}</span>
     </div>
 
-    <button onClick={() => router.push('/novo-lancamento')} className="fab" style={{ bottom: 80, right: 20 }}>+</button>
+    <button onClick={() => router.push('/novo-lancamento')} className="fab" style={{ bottom: 80, right: 20 }} aria-label="Novo lançamento">+</button>
 
     {editando && (
-      <Modal titulo="✏️ Editar Lançamento" onClose={() => setEditando(null)}>
+      <Modal titulo="Editar Lançamento" onClose={() => setEditando(null)}>
         <div style={{ display: 'grid', gap: 8 }}>
           <div>
             <label style={{ fontSize: 11, color: 'var(--muted)' }}>Descrição</label>
@@ -230,7 +231,7 @@ function LancamentosInner() {
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
             <button onClick={() => setEditando(null)} style={{ flex: 1, padding: '9px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--fg)', cursor: 'pointer' }}>Cancelar</button>
-            <button onClick={salvarEdicao} disabled={editMutation.isPending} className="btn btn-primary" style={{ flex: 2 }}>{editMutation.isPending ? '⏳' : 'Salvar'}</button>
+            <button onClick={salvarEdicao} disabled={editMutation.isPending} className="btn btn-primary" style={{ flex: 2 }}>{editMutation.isPending ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Clock aria-hidden="true" size={15} /> ...</span> : 'Salvar'}</button>
           </div>
         </div>
       </Modal>

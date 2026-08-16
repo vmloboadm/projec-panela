@@ -3,7 +3,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth, fmtCurrency } from '@/app/components/useAuth'
 import { Loading, EmptyState } from '@/app/components/Shared'
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts'
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, Area } from 'recharts'
+import { Banknote, Flame, TrendingUp, BarChart3, Trophy, Plus } from 'lucide-react'
 
 const CORES = ['#e74c3c', '#f39c12', '#2ecc71', '#3498db', '#9b59b6', '#1abc9c', '#e67e22', '#7f8c8d', '#95a5a6', '#16a085']
 
@@ -75,7 +76,7 @@ export default function DespesasPage() {
 
   return <>
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
-      <span style={{ fontWeight: 700, fontSize: 15 }}>💸 Despesas</span>
+      <span style={{ fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}><Banknote aria-hidden="true" size={15} color="var(--muted)" /> Despesas</span>
       <select value={periodo} onChange={e => setPeriodo(e.target.value as any)} className="form-select" style={{ marginLeft: 'auto', fontSize: 12 }}>
         <option value="mes">Este mês</option>
         <option value="mesAnterior">Mês passado</option>
@@ -102,20 +103,27 @@ export default function DespesasPage() {
       </div>
     </div>
 
-    {maiorCat && <div style={{ background: 'var(--surface)', borderRadius: 12, border: '1px solid var(--accent)', padding: '10px 12px', marginBottom: 12, fontSize: 12 }}>
-      🔥 Maior categoria: <strong>{maiorCat.nome}</strong> — {fmtCurrency(maiorCat.total)} ({maiorCat.percentual}%)
+    {maiorCat && <div style={{ background: 'var(--surface)', borderRadius: 12, border: '1px solid var(--accent)', padding: '10px 12px', marginBottom: 12, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+      <Flame aria-hidden="true" size={13} color="var(--accent)" /> Maior categoria: <strong>{maiorCat.nome}</strong> — {fmtCurrency(maiorCat.total)} ({maiorCat.percentual}%)
     </div>}
 
     {dados?.porDia && dados.porDia.length > 0 && (
       <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 12, border: '1px solid var(--border)', marginBottom: 12 }}>
-        <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 6 }}>📈 Evolução diária de despesas</div>
+        <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Evolução diária de despesas</div>
         <ResponsiveContainer width="100%" height={150}>
           <LineChart data={dados.porDia}>
+            <defs>
+              <linearGradient id="gradDespesaLine" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="oklch(58% 0.16 28)" stopOpacity={0.45} />
+                <stop offset="100%" stopColor="oklch(58% 0.16 28)" stopOpacity={0} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis dataKey="dia" tick={{ fontSize: 9, fill: 'var(--muted)' }} tickFormatter={(d: string) => d.slice(5, 10)} />
             <YAxis tick={{ fontSize: 9, fill: 'var(--muted)' }} width={40} tickFormatter={(v: number) => v >= 1000 ? `${v / 1000}k` : `${v}`} />
             <Tooltip formatter={(v: any) => fmtCurrency(Number(v))} contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, fontSize: 12, boxShadow: '0 6px 20px rgba(0,0,0,.3)' }} />
-            <Line type="monotone" dataKey="total" stroke="var(--vermelho)" strokeWidth={2} dot={{ r: 2 }} />
+            <Area type="monotone" dataKey="total" stroke="none" fill="url(#gradDespesaLine)" />
+            <Line type="monotone" dataKey="total" stroke="var(--vermelho)" strokeWidth={2.5} dot={{ r: 2.5, fill: 'var(--vermelho)' }} activeDot={{ r: 5 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -123,7 +131,7 @@ export default function DespesasPage() {
 
     {dados?.categorias && dados.categorias.length > 0 && (
       <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 12, border: '1px solid var(--border)', marginBottom: 12 }}>
-        <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 6 }}>📊 Despesas por categoria — {fmtCurrency(totalPeriodo)}</div>
+        <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}><BarChart3 aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Despesas por categoria — {fmtCurrency(totalPeriodo)}</div>
         <ResponsiveContainer width="100%" height={180}>
           <BarChart data={dados.categorias}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -151,7 +159,7 @@ export default function DespesasPage() {
     )}
 
     <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 12, border: '1px solid var(--border)', marginBottom: 12 }}>
-      <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 6 }}>🏆 Top lançamentos</div>
+      <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}><Trophy aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Top lançamentos</div>
       {dados?.topItens && dados.topItens.length > 0 ? dados.topItens.map((t: any, i: number) => (
         <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 0', borderBottom: '1px solid var(--border)' }}>
           <span style={{ fontSize: 11, color: 'var(--muted)', width: 16 }}>{i + 1}º</span>
@@ -165,7 +173,7 @@ export default function DespesasPage() {
     </div>
 
     <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-      <input className="form-input" placeholder="🔍 Buscar lançamento..." value={search} onChange={e => setSearch(e.target.value)} style={{ fontSize: 12, flex: 2 }} />
+      <input className="form-input" placeholder="Buscar lançamento..." value={search} onChange={e => setSearch(e.target.value)} style={{ fontSize: 12, flex: 2 }} />
       <select className="form-select" value={catFiltro} onChange={e => setCatFiltro(e.target.value)} style={{ fontSize: 12, flex: 1 }}>
         <option value="">Todas categorias</option>
         {(dados?.categorias || []).map((c: any) => <option key={c.nome} value={c.nome}>{c.nome}</option>)}
@@ -182,6 +190,6 @@ export default function DespesasPage() {
       </div>
     ))}
 
-    <button onClick={() => router.push('/novo-lancamento')} className="fab" style={{ bottom: 20, right: 20 }} title="Lançar despesa">✚</button>
+    <button onClick={() => router.push('/novo-lancamento')} className="fab" style={{ bottom: 20, right: 20 }} title="Lançar despesa" aria-label="Lançar despesa"><Plus aria-hidden="true" size={26} strokeWidth={2.4} /></button>
   </>
 }

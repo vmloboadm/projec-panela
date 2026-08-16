@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth, fmtCurrency } from '@/app/components/useAuth'
 import { Loading, EmptyState, Modal } from '@/app/components/Shared'
+import { Users, User, CheckCircle2, Banknote, Pencil, Trash2 } from 'lucide-react'
 
 const TIPOS_PAGAMENTO = [
   { value: 'quinzena', label: 'Quinzena' },
@@ -104,7 +105,7 @@ export default function FuncionariosPage() {
   return (
     <div style={{ padding: 16, paddingBottom: 90 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
-        <span style={{ fontWeight: 700, fontSize: 15 }}>👥 Funcionários</span>
+        <span style={{ fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}><Users aria-hidden="true" size={15} color="var(--muted)" /> Funcionários</span>
         <input type="month" value={mes} onChange={e => setMes(e.target.value)} className="form-input" style={{ marginLeft: 'auto', width: 130, fontSize: 12, padding: '6px 8px' }} />
         <button onClick={() => abrirCadastro()} className="btn-primary" style={{ fontSize: 12, padding: '8px 12px' }}>+ Novo</button>
       </div>
@@ -137,14 +138,14 @@ export default function FuncionariosPage() {
               return (
                 <div key={f.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'oklch(62% 0.14 45 / .15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>👤</div>
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'oklch(62% 0.14 45 / .15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><User aria-hidden="true" size={18} style={{ color: 'var(--muted)' }} /></div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 700, fontSize: 14 }}>{f.nome}</div>
                       <div style={{ fontSize: 11, color: 'var(--muted)' }}>{f.cargo} · Salário {fmtCurrency(f.salario_base)}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: falta > 0 ? 'var(--vermelho)' : 'var(--verde)' }}>
-                        {falta > 0 ? `Falta ${fmtCurrency(falta)}` : 'Pago ✓'}
+                        {falta > 0 ? `Falta ${fmtCurrency(falta)}` : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><CheckCircle2 aria-hidden="true" size={13} /> Pago</span>}
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--muted)' }}>Pago {fmtCurrency(f.pago_mes)}</div>
                     </div>
@@ -162,9 +163,9 @@ export default function FuncionariosPage() {
                     </div>
                   )}
                   <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                    <button onClick={() => abrirPagamento(f)} className="btn-primary" style={{ flex: 1, fontSize: 12, padding: '8px 10px' }}>💰 Pagamento</button>
-                    <button onClick={() => abrirCadastro(f)} style={{ fontSize: 12, padding: '8px 12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, cursor: 'pointer' }}>✏️</button>
-                    <button onClick={() => excluirFuncionario(f)} style={{ fontSize: 12, padding: '8px 12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, cursor: 'pointer', color: 'var(--vermelho)' }}>🗑️</button>
+                    <button onClick={() => abrirPagamento(f)} className="btn-primary" style={{ flex: 1, fontSize: 12, padding: '8px 10px' }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Banknote aria-hidden="true" size={14} /> Pagamento</span></button>
+                    <button onClick={() => abrirCadastro(f)} aria-label="Editar" style={{ fontSize: 12, padding: '8px 12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, cursor: 'pointer' }}><Pencil aria-hidden="true" size={14} /></button>
+                    <button onClick={() => excluirFuncionario(f)} aria-label="Excluir" style={{ fontSize: 12, padding: '8px 12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, cursor: 'pointer', color: 'var(--vermelho)' }}><Trash2 aria-hidden="true" size={14} /></button>
                   </div>
                 </div>
               )

@@ -4,6 +4,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAuth, fmtCurrency } from '@/app/components/useAuth'
 import { Loading, EmptyState, Modal } from '@/app/components/Shared'
 import toast from 'react-hot-toast'
+import {
+  TrendingDown, Beef, FolderOpen, AlertTriangle, Plus, ShoppingCart,
+  Building2, Pencil, Trash2, CheckCircle2, PauseCircle, Clock,
+} from 'lucide-react'
 
 type Carne = {
   id: string
@@ -205,14 +209,14 @@ export default function ChurrascoPage() {
   const precisaComprar = (alertas?.sugestao_compra || []).filter(s => s.comprar > 0)
 
   const abas = [
-    { key: 'baixa', label: '📉 Baixa do Dia' },
-    { key: 'estoque', label: '🥩 Estoque' },
-    { key: 'historico', label: '🗂️ Histórico' },
+    { key: 'baixa', label: 'Baixa do Dia', Icon: TrendingDown },
+    { key: 'estoque', label: 'Estoque', Icon: Beef },
+    { key: 'historico', label: 'Histórico', Icon: FolderOpen },
   ] as const
 
   return <>
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-      <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, color: 'var(--accent)' }}>🥩 Churrasco</span>
+      <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 7 }}><Beef aria-hidden="true" size={17} /> Churrasco</span>
     </div>
 
     <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
@@ -226,14 +230,14 @@ export default function ChurrascoPage() {
         <button key={t.key} onClick={() => setAba(t.key)}
           style={{ flex: 1, padding: '9px 6px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             background: aba === t.key ? 'var(--accent)' : 'var(--surface)', color: aba === t.key ? 'var(--bg)' : 'var(--muted)' }}>
-          {t.label}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><t.Icon aria-hidden="true" size={12} /> {t.label}</span>
         </button>
       ))}
     </div>
 
     {aba === 'baixa' && <>
       <button onClick={() => setAba('baixa')} className="btn btn-primary" style={{ width: '100%', height: 48, fontSize: 15, marginBottom: 4 }}>
-        📉 Registrar Baixa do Dia
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><TrendingDown aria-hidden="true" size={14} /> Registrar Baixa do Dia</span>
       </button>
       <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 10 }}>Informe quanto de cada carne será consumido/baixado hoje.</div>
 
@@ -245,14 +249,14 @@ export default function ChurrascoPage() {
       </div>
 
       {carnesAtivas.length === 0
-        ? <EmptyState msg="Nenhuma carne cadastrada" cta={`<button class="btn btn-primary" onclick="setAba('estoque')">📦 Cadastrar</button>`} />
+        ? <EmptyState msg="Nenhuma carne cadastrada" cta={`<button class="btn btn-primary" onclick="setAba('estoque')">Cadastrar</button>`} />
         : carnesAtivas.map(c => {
           const kg = parseFloat(baixas[c.id] || '') || 0
           const max = parseFloat(String(c.quantidade_kg)) || 0
           const invalido = kg > max
           const baixo = max < (parseFloat(String(c.estoque_minimo_kg)) || 5)
           return <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 10px', background: 'var(--surface)', borderRadius: 8, border: `1px solid ${invalido ? 'var(--vermelho)' : 'var(--border)'}`, marginBottom: 6 }}>
-            <span style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{c.nome} {baixo && <span style={{ color: 'var(--vermelho)', fontSize: 11 }}>⚠️</span>}</span>
+            <span style={{ flex: 1, fontSize: 13, fontWeight: 500, display: 'inline-flex', alignItems: 'center' }}>{c.nome} {baixo && <AlertTriangle aria-hidden="true" size={11} style={{ color: 'var(--vermelho)', marginLeft: 4 }} />}</span>
             <span style={{ fontSize: 11, color: 'var(--muted)' }}>{max.toFixed(1)}kg</span>
             <input type="number" min="0" step="0.1" placeholder="kg" value={baixas[c.id] || ''}
               onChange={e => setBaixas(p => ({ ...p, [c.id]: e.target.value }))}
@@ -263,19 +267,21 @@ export default function ChurrascoPage() {
       <input className="form-input" placeholder="Observação (opcional)" value={obsBaixa} onChange={e => setObsBaixa(e.target.value)} style={{ marginTop: 8 }} />
       <button onClick={salvarBaixa} disabled={salvandoBaixa || totalBaixas <= 0} className="btn btn-primary"
         style={{ width: '100%', height: 48, fontSize: 15, marginTop: 8, opacity: (salvandoBaixa || totalBaixas <= 0) ? 0.5 : 1 }}>
-        {salvandoBaixa ? '⏳ Salvando...' : `✅ Salvar Baixa (${totalBaixas.toFixed(1)} kg)`}
+        {salvandoBaixa
+          ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Clock aria-hidden="true" size={14} /> Salvando...</span>
+          : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><CheckCircle2 aria-hidden="true" size={14} /> Salvar Baixa ({totalBaixas.toFixed(1)} kg)</span>}
       </button>
     </>}
 
     {aba === 'estoque' && <>
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <button onClick={() => abrirCarne()} className="btn btn-primary" style={{ flex: 1, height: 44 }}>
-          ➕ Nova Carne
+<span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Plus aria-hidden="true" size={14} /> Nova Carne</span>
         </button>
       </div>
 
       {precisaComprar.length > 0 && <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 12, border: '1px solid var(--accent)', marginBottom: 12 }}>
-        <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6 }}>🛒 Sugestão de Compra <span style={{ color: 'var(--accent)', fontWeight: 700 }}>({fmtCurrency(alertas!.total_sugestao)})</span></div>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontWeight: 600, fontSize: 13, marginBottom: 6 }}><ShoppingCart aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Sugestão de Compra <span style={{ color: 'var(--accent)', fontWeight: 700 }}>({fmtCurrency(alertas!.total_sugestao)})</span></div>
         {precisaComprar.map(s => (
           <div key={s.id} style={{ fontSize: 12, padding: '5px 0', borderBottom: '1px solid var(--border)' }}>
             {s.nome}: <strong>comprar {s.comprar}kg</strong> <span style={{ color: 'var(--muted)' }}>({fmtCurrency(s.custo)} · consumo {s.consumo_semana}kg/semana)</span>
@@ -289,7 +295,7 @@ export default function ChurrascoPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <span style={{ fontWeight: 600, fontSize: 14 }}>{c.nome}</span>
-              {baixo && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--vermelho)', fontWeight: 700 }}>⚠️ BAIXO</span>}
+              {baixo && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--vermelho)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}><AlertTriangle aria-hidden="true" size={11} /> BAIXO</span>}
             </div>
             <span style={{ fontSize: 15, fontWeight: 700, color: baixo ? 'var(--vermelho)' : 'var(--fg)' }}>
               {parseFloat(String(c.quantidade_kg)).toFixed(1)} <span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 400 }}>kg</span>
@@ -297,17 +303,17 @@ export default function ChurrascoPage() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--muted)', marginTop: 4, alignItems: 'center' }}>
             <span>Mín: {c.estoque_minimo_kg} kg · {fmtCurrency(c.preco_kg_compra)}/kg</span>
-            {c.fornecedor && <span>🏢 {c.fornecedor}</span>}
+            {c.fornecedor && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Building2 aria-hidden="true" size={11} style={{ color: 'var(--muted)' }} /> {c.fornecedor}</span>}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => abrirCarne(c)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 15 }}>✏️</button>
-              <button onClick={() => toggleAtivo(c)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--muted)' }}>{c.ativo === false ? '✅' : '⏸️'}</button>
+              <button onClick={() => abrirCarne(c)} aria-label="Editar carne" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center' }}><Pencil aria-hidden="true" size={15} /></button>
+              <button onClick={() => toggleAtivo(c)} aria-label={c.ativo === false ? 'Ativar carne' : 'Desativar carne'} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--muted)', display: 'flex', alignItems: 'center' }}>{c.ativo === false ? <CheckCircle2 aria-hidden="true" size={14} /> : <PauseCircle aria-hidden="true" size={14} />}</button>
             </div>
           </div>
         </div>
       })}
 
       {(alertas?.estoque_baixo?.length || 0) > 0 && <div style={{ marginTop: 8 }}>
-        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--vermelho)', marginBottom: 6 }}>⚠️ Estoque baixo</div>
+        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--vermelho)', marginBottom: 6, display: 'inline-flex', alignItems: 'center', gap: 5 }}><AlertTriangle aria-hidden="true" size={13} /> Estoque baixo</div>
         {alertas!.estoque_baixo.map(e => <div key={e.id} style={{ fontSize: 12, padding: '4px 0' }}>{e.nome}: {e.quantidade_kg}kg (mín {e.estoque_minimo_kg}kg)</div>)}
       </div>}
     </>}
@@ -343,15 +349,15 @@ export default function ChurrascoPage() {
               <div style={{ fontSize: 13, fontWeight: 600 }}>{parseFloat(String(c.quantidade_kg)).toFixed(1)} kg</div>
               <div style={{ fontSize: 11, color: 'var(--vermelho)' }}>-{fmtCurrency(c.valor_total)}</div>
             </div>
-            <button onClick={() => { setModalEdicao(c); setEditKg(String(c.quantidade_kg)); setEditObs(c.observacao || '') }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 15 }}>✏️</button>
-            <button onClick={() => excluirConsumo(c)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 15 }}>🗑️</button>
+            <button onClick={() => { setModalEdicao(c); setEditKg(String(c.quantidade_kg)); setEditObs(c.observacao || '') }} aria-label="Editar baixa" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center' }}><Pencil aria-hidden="true" size={15} /></button>
+            <button onClick={() => excluirConsumo(c)} aria-label="Excluir baixa" style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center' }}><Trash2 aria-hidden="true" size={15} /></button>
           </div>
         </div>
       ))}
     </>}
 
-    {modalCarne && <Modal titulo={modalCarne === 'nova' ? '➕ Nova Carne' : `✏️ Editar ${modalCarne.nome}`} onClose={() => setModalCarne(null)}>
-      <label style={labelStyle}>🥩 Nome</label>
+    {modalCarne && <Modal titulo={modalCarne === 'nova' ? 'Nova Carne' : `Editar ${modalCarne.nome}`} onClose={() => setModalCarne(null)}>
+      <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 5 }}><Beef aria-hidden="true" size={12} style={{ color: 'var(--muted)' }} /> Nome</label>
       <input style={inputStyle} value={carneForm.nome || ''} onChange={e => setCarneForm({ ...carneForm, nome: e.target.value })} placeholder="Ex: Picanha" />
       <label style={labelStyle}>Corte / tipo</label>
       <input style={inputStyle} value={carneForm.tipo_corte || ''} onChange={e => setCarneForm({ ...carneForm, tipo_corte: e.target.value })} placeholder="Ex.: Alcatra" />
@@ -374,18 +380,22 @@ export default function ChurrascoPage() {
       <label style={labelStyle}>Fornecedor</label>
       <input style={inputStyle} value={carneForm.fornecedor || ''} onChange={e => setCarneForm({ ...carneForm, fornecedor: e.target.value })} placeholder="Opcional" />
       <button onClick={salvarCarne} disabled={salvandoCarne} className="btn btn-primary" style={{ width: '100%', height: 46, marginTop: 4 }}>
-        {salvandoCarne ? '⏳ Salvando...' : modalCarne === 'nova' ? '✅ Cadastrar' : '✅ Salvar'}
+        {salvandoCarne
+          ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Clock aria-hidden="true" size={14} /> Salvando...</span>
+          : modalCarne === 'nova'
+            ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><CheckCircle2 aria-hidden="true" size={14} /> Cadastrar</span>
+            : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><CheckCircle2 aria-hidden="true" size={14} /> Salvar</span>}
       </button>
     </Modal>}
 
-    {modalEdicao && <Modal titulo={`✏️ Editar Baixa — ${modalEdicao.corte_nome}`} onClose={() => setModalEdicao(null)}>
+    {modalEdicao && <Modal titulo={`Editar Baixa — ${modalEdicao.corte_nome}`} onClose={() => setModalEdicao(null)}>
       <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8 }}>Data: {new Date(modalEdicao.data + 'T00:00:00').toLocaleDateString('pt-BR')}</div>
       <input className="form-input" type="number" step="0.1" min="0" placeholder="Quantidade (kg)" value={editKg} onChange={e => setEditKg(e.target.value)} />
       <input className="form-input" placeholder="Observação" value={editObs} onChange={e => setEditObs(e.target.value)} style={{ marginTop: 8 }} />
       <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
         <button onClick={() => setModalEdicao(null)} style={{ flex: 1, padding: '10px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--fg)', cursor: 'pointer' }}>Cancelar</button>
         <button onClick={salvarEdicao} disabled={salvandoBaixa} className="btn btn-primary" style={{ flex: 2 }}>
-          {salvandoBaixa ? '⏳' : 'Salvar'}
+          {salvandoBaixa ? <Clock aria-hidden="true" size={15} /> : 'Salvar'}
         </button>
       </div>
     </Modal>}

@@ -5,6 +5,11 @@ import { useAuth, fmtCurrency, todayStr } from '@/app/components/useAuth'
 import { Loading, EmptyState, Modal } from '@/app/components/Shared'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import {
+  Banknote, Smartphone, CreditCard, Repeat, NotebookPen, FileText, Camera,
+  Plus, CalendarClock, Clock, CheckCircle2, Trash2,
+  Building2, AlertCircle, CircleDollarSign,
+} from 'lucide-react'
 
 type Conta = {
   id: string
@@ -30,10 +35,10 @@ type Conta = {
 
 const TIPOS_DOC = ['Boleto', 'NFe', 'Duplicata', 'Recibo', 'Outro']
 const METODOS = [
-  { key: 'dinheiro', label: 'Dinheiro', icon: '💵' },
-  { key: 'pix', label: 'Pix', icon: '📱' },
-  { key: 'cartao_credito', label: 'Cartão Crédito', icon: '💳' },
-  { key: 'cartao_debito', label: 'Cartão Débito', icon: '💳' },
+  { key: 'dinheiro', label: 'Dinheiro', Icon: Banknote },
+  { key: 'pix', label: 'Pix', Icon: Smartphone },
+  { key: 'cartao_credito', label: 'Cartão Crédito', Icon: CreditCard },
+  { key: 'cartao_debito', label: 'Cartão Débito', Icon: CreditCard },
 ]
 
 function hojeBR() { const d = new Date(); d.setHours(d.getHours() - 3); return d.toISOString().slice(0, 10) }
@@ -286,7 +291,7 @@ export default function ContasPage() {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.descricao}</span>
-          {c.recorrente && <span title="Recorrente">🔁</span>}
+          {c.recorrente && <span title="Recorrente" style={{ display: 'flex' }}><Repeat aria-hidden="true" size={12} style={{ color: 'var(--muted)', flexShrink: 0 }} /></span>}
         </div>
         <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>
           {fornecedor && <><strong style={{ color: 'var(--fg)' }}>{fornecedor}</strong> · </>}
@@ -294,8 +299,8 @@ export default function ContasPage() {
           {' '}· Vence {new Date(c.data_vencimento + 'T00:00:00').toLocaleDateString('pt-BR')}
           {atraso > 0 && <span style={{ color: 'var(--vermelho)' }}> ({atraso}d atraso)</span>}
         </div>
-        {c.observacoes && <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 2 }}>📝 {c.observacoes}</div>}
-        {c.ja_lancada && <div style={{ fontSize: 10, color: 'var(--verde)', marginTop: 2 }}>🧾 Custo já lançado</div>}
+        {c.observacoes && <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}><NotebookPen aria-hidden="true" size={11} style={{ flexShrink: 0 }} /> {c.observacoes}</div>}
+        {c.ja_lancada && <div style={{ fontSize: 10, color: 'var(--verde)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}><FileText aria-hidden="true" size={11} style={{ flexShrink: 0 }} /> Custo já lançado</div>}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
         <span style={{ fontWeight: 600, fontSize: 13 }}>{fmtCurrency(parseFloat(String(c.valor)) || 0)}</span>
@@ -303,21 +308,22 @@ export default function ContasPage() {
           {aba === 'pendentes' ? (
             <>
               <button onClick={() => { setPagandoConta(c); setPgData(hojeBR()); setPgMetodo(c.metodo_pagamento || 'dinheiro') }} disabled={pagarId === c.id}
-                style={{ padding: '4px 10px', borderRadius: 4, border: 'none', background: 'var(--accent)', color: 'var(--bg)', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
-                {pagarId === c.id ? '⏳' : 'PAGAR'}
+                style={{ padding: '4px 10px', borderRadius: 4, border: 'none', background: 'var(--accent)', color: 'var(--bg)', fontSize: 11, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                {pagarId === c.id ? <Clock aria-hidden="true" size={12} /> : <CheckCircle2 aria-hidden="true" size={12} />} PAGAR
               </button>
               <button onClick={() => { setPagandoConta(c); setPgMetodo(c.metodo_pagamento || 'dinheiro') }}
-                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--fg)', fontSize: 11, cursor: 'pointer' }} title="Pagamento com método/multa/juros">
-                💳
+                aria-label="Pagamento com método/multa/juros"
+                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--fg)', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CreditCard aria-hidden="true" size={14} />
               </button>
-              {c.recorrente && <button onClick={() => gerarProximoMes(c)}
-                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--fg)', fontSize: 11, cursor: 'pointer' }} title="Gerar próximo mês">
-                🔁
+              {c.recorrente && <button onClick={() => gerarProximoMes(c)} aria-label="Gerar próximo mês"
+                style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', color: 'var(--fg)', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Repeat aria-hidden="true" size={14} />
               </button>}
             </>
           ) : (
             <>
-              <button onClick={() => excluirConta(c)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>🗑️</button>
+              <button onClick={() => excluirConta(c)} aria-label="Excluir conta" style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--vermelho)' }}><Trash2 aria-hidden="true" size={15} /></button>
             </>
           )}
         </div>
@@ -327,14 +333,14 @@ export default function ContasPage() {
 
   return <>
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 8 }}>
-      <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, color: 'var(--accent)' }}>📄 Contas a Pagar</span>
+      <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 7 }}><CircleDollarSign aria-hidden="true" size={17} /> Contas a Pagar</span>
       <div style={{ display: 'flex', gap: 6 }}>
         <button onClick={() => fotoRef.current?.click()} disabled={lendoBoleto}
           style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--fg)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-          {lendoBoleto ? '⏳' : '📸 Boleto'}
+          {lendoBoleto ? <Clock aria-hidden="true" size={13} /> : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Camera aria-hidden="true" size={13} /> Boleto</span>}
         </button>
         <input ref={fotoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) lerBoleto(f); e.target.value = '' }} />
-        <button onClick={() => setShowModal(true)} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid var(--accent)', background: 'var(--accent)', color: 'var(--bg)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>➕ Nova</button>
+        <button onClick={() => setShowModal(true)} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid var(--accent)', background: 'var(--accent)', color: 'var(--bg)', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}><Plus aria-hidden="true" size={13} /> Nova</button>
       </div>
     </div>
 
@@ -358,7 +364,7 @@ export default function ContasPage() {
 
     {/* Calendário */}
     <div style={{ background: 'var(--surface)', borderRadius: 12, border: '1px solid var(--border)', padding: 12, marginBottom: 12 }}>
-      <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8, fontWeight: 600 }}>📅 CALENDÁRIO DE VENCIMENTOS</div>
+      <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}><CalendarClock aria-hidden="true" size={12} /> CALENDÁRIO DE VENCIMENTOS</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
         {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => <div key={i} style={{ textAlign: 'center', fontSize: 10, color: 'var(--muted)' }}>{d}</div>)}
         {(() => {
@@ -386,7 +392,7 @@ export default function ContasPage() {
 
     {/* Filtros + busca */}
     <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
-      <input className="form-input" placeholder="🔍 Buscar..." value={busca} onChange={e => setBusca(e.target.value)} style={{ flex: 1, minWidth: 120 }} />
+      <input className="form-input" placeholder="Buscar..." value={busca} onChange={e => setBusca(e.target.value)} style={{ flex: 1, minWidth: 120 }} />
       <select className="form-select" value={filtroFornecedor} onChange={e => setFiltroFornecedor(e.target.value)} style={{ flex: 1, minWidth: 100 }}>
         <option value="">Todos fornecedores</option>
         {fornecedores.map(f => <option key={f} value={f}>{f}</option>)}
@@ -403,7 +409,7 @@ export default function ContasPage() {
         <button key={t} onClick={() => setAba(t)}
           style={{ flex: 1, padding: '8px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             background: aba === t ? 'var(--accent)' : 'var(--surface)', color: aba === t ? 'var(--bg)' : 'var(--muted)' }}>
-          {t === 'pendentes' ? `🔴 Pendentes (${contas.length})` : `✅ Pagas (${pagas.length})`}
+          {t === 'pendentes' ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><AlertCircle aria-hidden="true" size={12} /> Pendentes ({contas.length})</span> : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><CheckCircle2 aria-hidden="true" size={12} /> Pagas ({pagas.length})</span>}
         </button>
       ))}
     </div>
@@ -411,7 +417,7 @@ export default function ContasPage() {
     {/* Agrupamento por fornecedor */}
     {aba === 'pendentes' && Object.keys(contasPorFornecedor).length > 0 && (
       <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 6, fontWeight: 600 }}>🏢 POR FORNECEDOR</div>
+        <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 6, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}><Building2 aria-hidden="true" size={12} /> POR FORNECEDOR</div>
         {Object.entries(contasPorFornecedor).map(([f, lista]) => (
           <div key={f} style={{ marginBottom: 8 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 600, color: 'var(--fg)', marginBottom: 4 }}>
@@ -433,14 +439,14 @@ export default function ContasPage() {
     </>}
 
     {/* Modal nova conta */}
-    {showModal && <Modal titulo="➕ Nova Conta a Pagar" onClose={() => setShowModal(false)} fullHeight>
+    {showModal && <Modal titulo="Nova Conta a Pagar" onClose={() => setShowModal(false)} fullHeight>
         <input className="form-input" placeholder="Descrição (ex: Nota de frango)" value={novaDesc} onChange={e => setNovaDesc(e.target.value)} autoFocus />
         <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
           <input className="form-input" type="number" step="0.01" placeholder="Valor (R$)" value={novaValor} onChange={e => setNovaValor(e.target.value)} style={{ flex: 1 }} />
           <input className="form-input" type="date" value={novaData} onChange={e => setNovaData(e.target.value)} style={{ flex: 1 }} />
         </div>
         <div style={{ position: 'relative', marginTop: 8 }}>
-          <input className="form-input" placeholder="🏢 Fornecedor (ex: Açougue Central)" value={novaFornecedor} onChange={e => { setNovaFornecedor(e.target.value); setShowFornecedores(true) }} onFocus={() => setShowFornecedores(true)} ref={fornecedorRef} />
+          <input className="form-input" placeholder="Fornecedor (ex: Açougue Central)" value={novaFornecedor} onChange={e => { setNovaFornecedor(e.target.value); setShowFornecedores(true) }} onFocus={() => setShowFornecedores(true)} ref={fornecedorRef} />
           {showFornecedores && novaFornecedor !== '' && (
             <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
               {fornecedoresFiltrados.length === 0 && <div style={{ padding: 8, fontSize: 12, color: 'var(--muted)' }}>Nenhum fornecedor salvo</div>}
@@ -462,19 +468,19 @@ export default function ContasPage() {
         <textarea className="form-input" placeholder="Observações (opcional)" value={novaObs} onChange={e => setNovaObs(e.target.value)} rows={2} style={{ marginTop: 8 }} />
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, marginTop: 8, cursor: 'pointer' }}>
           <input type="checkbox" checked={novaRecorrente} onChange={e => setNovaRecorrente(e.target.checked)} />
-          🔁 Recorrente (botão para gerar próximo mês)
+          <Repeat aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Recorrente (botão para gerar próximo mês)
         </label>
         <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, marginTop: 6, cursor: 'pointer' }}>
           <input type="checkbox" checked={novaJaLancada} onChange={e => setNovaJaLancada(e.target.checked)} />
-          🧾 Custo já lançado na compra do dia (não gerar despesa ao pagar)
+          <FileText aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Custo já lançado na compra do dia (não gerar despesa ao pagar)
         </label>
         <button onClick={() => criarConta()} disabled={salvando} className="btn btn-primary" style={{ width: '100%', marginTop: 12, height: 42 }}>
-          {salvando ? '⏳ Salvando...' : '✅ Criar Conta'}
+          {salvando ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Clock aria-hidden="true" size={15} /> Salvando...</span> : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><CheckCircle2 aria-hidden="true" size={15} /> Criar Conta</span>}
         </button>
     </Modal>}
 
     {/* Modal pagamento com método */}
-    {pagandoConta && <Modal titulo={`💳 Pagar: ${pagandoConta.descricao}`} onClose={() => setPagandoConta(null)}>
+    {pagandoConta && <Modal titulo={`Pagar: ${pagandoConta.descricao}`} onClose={() => setPagandoConta(null)}>
         <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 10 }}>
           Valor: <strong style={{ color: 'var(--vermelho)' }}>{fmtCurrency(parseFloat(String(pagandoConta.valor)) || 0)}</strong>
           {diasAtraso(pagandoConta) > 0 && <> · <span style={{ color: 'var(--vermelho)' }}>{diasAtraso(pagandoConta)}d em atraso</span></>}
@@ -483,8 +489,8 @@ export default function ContasPage() {
         <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
           {METODOS.map(m => (
             <button key={m.key} onClick={() => setPgMetodo(m.key)}
-              style={{ padding: '8px 12px', borderRadius: 8, border: pgMetodo === m.key ? '1px solid var(--accent)' : '1px solid var(--border)', background: pgMetodo === m.key ? 'var(--accent)' : 'var(--surface)', color: pgMetodo === m.key ? 'var(--bg)' : 'var(--fg)', fontSize: 12, cursor: 'pointer' }}>
-              {m.icon} {m.label}
+              style={{ padding: '8px 12px', borderRadius: 8, border: pgMetodo === m.key ? '1px solid var(--accent)' : '1px solid var(--border)', background: pgMetodo === m.key ? 'var(--accent)' : 'var(--surface)', color: pgMetodo === m.key ? 'var(--bg)' : 'var(--fg)', fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <m.Icon aria-hidden="true" size={14} /> {m.label}
             </button>
           ))}
         </div>
@@ -499,7 +505,7 @@ export default function ContasPage() {
           Total a pagar: <strong style={{ color: 'var(--vermelho)' }}>{fmtCurrency((parseFloat(String(pagandoConta.valor)) || 0) + (parseFloat(pgMulta) || 0) + (parseFloat(pgJuros) || 0))}</strong>
         </div>
         <button onClick={() => pagarConta(pagandoConta)} disabled={pagarId === pagandoConta.id} className="btn btn-primary" style={{ width: '100%', height: 42 }}>
-          {pagarId === pagandoConta.id ? '⏳ Pagando...' : `✅ Confirmar Pagamento`}
+          {pagarId === pagandoConta.id ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Clock aria-hidden="true" size={15} /> Pagando...</span> : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><CheckCircle2 aria-hidden="true" size={15} /> Confirmar Pagamento</span>}
         </button>
     </Modal>}
   </>

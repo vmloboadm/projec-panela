@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAuth, fmtCurrency } from '@/app/components/useAuth'
 import { Loading } from '@/app/components/Shared'
 import toast from 'react-hot-toast'
+import { Banknote, Target, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const INPUT = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: 14, boxSizing: 'border-box' as const }
 const LABEL = { fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 4 }
@@ -75,24 +76,26 @@ export default function ConfigPage() {
 
   return <>
     <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
-      {([['custos', '💰 Custos do Mês'], ['limites', '🎯 Limites & Alertas']] as const).map(([k, lab]) => (
+      {([['custos', Banknote, 'Custos do Mês'], ['limites', Target, 'Limites & Alertas']] as const).map(([k, Icon, lab]) => (
         <button key={k} onClick={() => setAba(k)}
           style={{ flex: 1, padding: '9px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             background: aba === k ? 'var(--accent)' : 'var(--surface)', color: aba === k ? 'var(--bg)' : 'var(--muted)' }}>
-          {lab}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Icon aria-hidden="true" size={13} /> {lab}
+          </span>
         </button>
       ))}
     </div>
 
     {aba === 'custos' && <>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <button onClick={() => setMes(m => mudarMes(m, -1))} style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', color: 'var(--fg)' }}>‹</button>
+        <button onClick={() => setMes(m => mudarMes(m, -1))} aria-label="Mês anterior" style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', color: 'var(--fg)' }}><ChevronLeft aria-hidden="true" size={16} /></button>
         <div style={{ flex: 1, textAlign: 'center', fontWeight: 600, textTransform: 'capitalize' }}>{mesLabel}</div>
-        <button onClick={() => setMes(m => mudarMes(m, +1))} style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', color: 'var(--fg)' }}>›</button>
+        <button onClick={() => setMes(m => mudarMes(m, +1))} aria-label="Próximo mês" style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', color: 'var(--fg)' }}><ChevronRight aria-hidden="true" size={16} /></button>
       </div>
 
       <div style={CARD}>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>💰 Custos do Mês</div>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}><Banknote aria-hidden="true" size={14} color="var(--accent)" /> Custos do Mês</div>
         <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 12 }}>Esses valores variam mês a mês (luz, água, gás, impostos...). Preencha o real de cada mês.</div>
         {tiposCusto.map(((t: any) => (
           <div key={t.tipo} style={{ marginBottom: 10 }}>
@@ -113,27 +116,27 @@ export default function ConfigPage() {
           {config.nome_restaurante} · Custo fixo mensal cadastrado: {fmtCurrency((config.aluguel_mensal||0)+(config.funcionarios_mensal||0)+(config.energia_mensal||0)+(config.agua_mensal||0)+(config.outros_fixos||0))}
         </div>}
         <button onClick={salvarCustos} disabled={savingCustos} style={{ width: '100%', height: 46, marginTop: 10, background: 'var(--accent)', color: 'var(--bg)', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', opacity: savingCustos ? 0.5 : 1 }}>
-          {savingCustos ? 'Salvando...' : '✅ Salvar Custos de ' + mes}
+          {savingCustos ? 'Salvando...' : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><CheckCircle2 aria-hidden="true" size={15} /> Salvar Custos de {mes}</span>}
         </button>
       </div>
     </>}
 
     {aba === 'limites' && <>
       <div style={CARD}>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>🎯 Limites & Alertas</div>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}><Target aria-hidden="true" size={14} color="var(--accent)" /> Limites & Alertas</div>
         <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 12 }}>Usados no dashboard e fechamento.</div>
         <div style={{ marginBottom: 10 }}>
-          <label style={LABEL}>🎯 Meta diária de vendas (R$)</label>
+          <label style={{ ...LABEL, display: 'flex', alignItems: 'center', gap: 6 }}><Target aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Meta diária de vendas (R$)</label>
           <input type="number" step="0.01" value={config?.meta_diaria_vendas || ''} onChange={e => setConfig({ ...config, meta_diaria_vendas: e.target.value })} placeholder="0,00" style={INPUT} />
           <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>O dashboard mostra o % de cumprimento.</div>
         </div>
         <div style={{ marginBottom: 10 }}>
-          <label style={LABEL}>💵 Tolerância de caixa (R$)</label>
+          <label style={{ ...LABEL, display: 'flex', alignItems: 'center', gap: 6 }}><Banknote aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Tolerância de caixa (R$)</label>
           <input type="number" step="0.01" value={config?.tolerancia_caixa || ''} onChange={e => setConfig({ ...config, tolerancia_caixa: e.target.value })} placeholder="10" style={INPUT} />
           <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>Margem de erro aceita ao conferir o caixa no fechamento.</div>
         </div>
         <button onClick={salvarLimites} disabled={saving} style={{ width: '100%', height: 46, marginTop: 6, background: 'var(--accent)', color: 'var(--bg)', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.5 : 1 }}>
-          {saving ? 'Salvando...' : '✅ Salvar Configurações'}
+          {saving ? 'Salvando...' : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><CheckCircle2 aria-hidden="true" size={15} /> Salvar Configurações</span>}
         </button>
       </div>
     </>}

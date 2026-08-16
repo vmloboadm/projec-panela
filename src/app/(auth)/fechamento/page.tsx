@@ -2,6 +2,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth, fmtCurrency, todayStr } from '@/app/components/useAuth'
 import { Loading, Modal } from '@/app/components/Shared'
+import {
+  Banknote, CreditCard, Smartphone, Ticket, Bike, TrendingUp, FileUp, Zap,
+  CheckCircle2, Pencil, Trash2, Landmark, Calculator, Receipt, Users,
+  Scale, Beef, BarChart3, Flame, ClipboardList, Save, FolderOpen, AlertTriangle,
+  Clock, ArrowUpCircle, ArrowDownCircle,
+} from 'lucide-react'
 
 interface Carne { id: string; nome: string; quantidade_kg: number; preco_kg_compra: number; estoque_minimo_kg: number }
 interface FechamentoAnterior { data: string; total_vendas: number; total_despesas: number; lucro: number; fechado: boolean; id?: string; vendas_dinheiro?: number; vendas_cartao_credito?: number; vendas_cartao_debito?: number; vendas_pix?: number; vendas_vale_refeicao?: number; vendas_delivery?: number; vendas_delivery_bruto?: number; observacoes?: string; fundo_caixa?: number; caixa_contado?: number; diferenca_caixa?: number }
@@ -10,13 +16,13 @@ const inputStyle = { width: '100%', padding: '8px', borderRadius: 8, border: '1p
 const cardStyle = { background: 'var(--surface)', borderRadius: 12, padding: 14, border: '1px solid var(--border)', marginBottom: 14 } as const
 const labelStyle = { fontSize: 11, color: 'var(--muted)' } as const
 
-const SECOES: { key: string; label: string; icon: string }[] = [
-  { key: 'dinheiro', label: 'Dinheiro', icon: '💵' },
-  { key: 'credito', label: 'Cartão de Crédito', icon: '💳' },
-  { key: 'debito', label: 'Cartão de Débito', icon: '💳' },
-  { key: 'pix', label: 'Pix', icon: '📱' },
-  { key: 'vale', label: 'Vale Refeição', icon: '🎫' },
-  { key: 'delivery', label: 'Delivery / 99 Food', icon: '🛵' },
+const SECOES: { key: string; label: string; Icon: any }[] = [
+  { key: 'dinheiro', label: 'Dinheiro', Icon: Banknote },
+  { key: 'credito', label: 'Cartão de Crédito', Icon: CreditCard },
+  { key: 'debito', label: 'Cartão de Débito', Icon: CreditCard },
+  { key: 'pix', label: 'Pix', Icon: Smartphone },
+  { key: 'vale', label: 'Vale Refeição', Icon: Ticket },
+  { key: 'delivery', label: 'Delivery / 99 Food', Icon: Bike },
 ]
 
 export default function FechamentoPage() {
@@ -248,7 +254,7 @@ export default function FechamentoPage() {
       }
       const res = await apiPost('/api/fechamento-dia', payload)
       if (res?.error) throw new Error(res.error)
-      setMsg({ tipo: 'ok', texto: `✅ Fechamento de ${dataSel} registrado! Vendas no painel.` })
+      setMsg({ tipo: 'ok', texto: `Fechamento de ${dataSel} registrado! Vendas no painel.` })
       setFechadoData(true)
       setHistorico(prev => [{ data: dataSel, total_vendas: totalVendas, total_despesas: despesas, lucro: lucroLiquido, fechado: true, fundo_caixa: fundoCaixaVal, caixa_contado: caixaContadoVal }, ...prev.filter(f => f.data !== dataSel)])
     } catch (err: any) { setMsg({ tipo: 'erro', texto: err?.message || 'Erro ao fechar dia' }) }
@@ -297,7 +303,7 @@ export default function FechamentoPage() {
       const lucro = totalVendas - (parseFloat(editDespesas) || 0)
       setHistorico(prev => prev.map(f => f.id === editando.id ? { ...f, total_vendas: totalVendas, total_despesas: parseFloat(editDespesas) || 0, lucro } : f))
       setEditando(null)
-      setMsg({ tipo: 'ok', texto: '✅ Fechamento atualizado!' })
+      setMsg({ tipo: 'ok', texto: 'Fechamento atualizado!' })
     } catch (err: any) { setMsg({ tipo: 'erro', texto: err?.message || 'Erro ao salvar' }) }
     setSalvandoEdit(false)
   }
@@ -312,7 +318,7 @@ export default function FechamentoPage() {
       setHistorico(prev => prev.filter(f => f.id !== editando.id))
       if (editando.data === dataSel) setFechadoData(false)
       setEditando(null)
-      setMsg({ tipo: 'ok', texto: '🗑️ Fechamento excluído' })
+      setMsg({ tipo: 'ok', texto: 'Fechamento excluído' })
     } catch (err: any) { setMsg({ tipo: 'erro', texto: err?.message || 'Erro ao excluir' }) }
     setExcluindo(false)
   }
@@ -322,7 +328,7 @@ export default function FechamentoPage() {
   return <>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
       <div>
-        <div style={{ fontWeight: 700, fontSize: 16 }}>📊 Fechamento do Dia</div>
+        <div style={{ fontWeight: 700, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}><TrendingUp aria-hidden="true" size={17} color="var(--accent)" /> Fechamento do Dia</div>
         <div style={{ fontSize: 12, color: 'var(--muted)' }}>{hojeDisplay}</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -330,18 +336,18 @@ export default function FechamentoPage() {
           onChange={e => e.target.value && selecionarData(e.target.value)}
           style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 13 }} />
         {dataSel !== hoje && <button onClick={() => selecionarData(hoje)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', cursor: 'pointer', fontSize: 12 }}>Hoje</button>}
-        {fechadoData && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'oklch(55% 0.10 140 / 0.15)', color: 'var(--verde)', fontWeight: 600 }}>✅ Fechado</span>}
+        {fechadoData && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'oklch(55% 0.10 140 / 0.15)', color: 'var(--verde)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}><CheckCircle2 aria-hidden="true" size={12} /> Fechado</span>}
       </div>
     </div>
 
     <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
       <button onClick={() => fileRef.current?.click()} disabled={importando}
         style={{ flex: 1, padding: '10px', borderRadius: 8, border: '1px solid var(--accent)', background: 'transparent', color: 'var(--accent)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-        {importando ? '⏳ Importando...' : '📄 Importar CSV / PDF'}
+        {importando ? <><span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><CheckCircle2 aria-hidden="true" size={14} /> Importando...</span></> : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><FileUp aria-hidden="true" size={14} /> Importar CSV / PDF</span>}
       </button>
       <button onClick={preencherDoDia} disabled={preenchendo}
         style={{ flex: 1, padding: '10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-        {preenchendo ? '⏳...' : '⚡ Preencher despesas'}
+        {preenchendo ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><CheckCircle2 aria-hidden="true" size={14} /> ...</span> : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Zap aria-hidden="true" size={14} /> Preencher despesas</span>}
       </button>
     </div>
     <input ref={fileRef} type="file" accept=".csv,.txt,.pdf" style={{ display: 'none' }} onChange={importarArquivo} />
@@ -351,18 +357,20 @@ export default function FechamentoPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         {SECOES.map(s => (
           <div key={s.key}>
-            <label style={labelStyle}>{s.icon} {s.label}</label>
+            <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <s.Icon aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> {s.label}
+            </label>
             <input type="number" step="0.01" value={valores[s.key] || ''} onChange={e => setValores({ ...valores, [s.key]: e.target.value })} placeholder="0,00" style={inputStyle} />
           </div>
         ))}
       </div>
       <div style={{ marginTop: 8, padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)' }}>
-        <label style={labelStyle}>🛵 Delivery — Venda Bruta (o que o cliente pagou)</label>
+        <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 5 }}><Bike aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Delivery — Venda Bruta (o que o cliente pagou)</label>
         <input type="number" step="0.01" value={deliveryBruto} onChange={e => setDeliveryBruto(e.target.value)} placeholder="0,00" style={inputStyle} />
         <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 6 }}>
           {deliveryBrutoVal > 0 ? (
             <>Bruto <b style={{ color: 'var(--fg)' }}>{fmtCurrency(deliveryBrutoVal)}</b> • Real (repasse) <b style={{ color: 'var(--verde)' }}>{fmtCurrency(deliveryReal)}</b> • Taxas 99Food <b style={{ color: 'var(--vermelho)' }}>{deliveryTaxa}%</b> ({fmtCurrency(deliveryBrutoVal - deliveryReal)})
-              <br />💰 Custo total das taxas: <b style={{ color: 'var(--vermelho)' }}>{fmtCurrency(deliveryBrutoVal - deliveryReal)}</b></>
+              <br />Custo total das taxas: <b style={{ color: 'var(--vermelho)' }}>{fmtCurrency(deliveryBrutoVal - deliveryReal)}</b></>
           ) : (
             <>Informe a venda bruta do delivery acima para calcular a taxa de desconto do 99Food</>
           )}
@@ -380,24 +388,24 @@ export default function FechamentoPage() {
 
     {fechadoData ? (
       <div style={{ ...cardStyle, textAlign: 'center', borderColor: 'var(--verde)' }}>
-        <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
+        <div style={{ fontSize: 32, marginBottom: 8, display: 'flex', justifyContent: 'center' }}><CheckCircle2 aria-hidden="true" size={36} color="var(--verde)" /></div>
         <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--verde)' }}>Dia fechado com {fmtCurrency(totalVendas)} em vendas</div>
         <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>Você pode refazer ou editar o fechamento desta data.</div>
         <button onClick={() => { setFechadoData(false); setMsg(null) }}
-          style={{ marginTop: 12, padding: '6px 16px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', cursor: 'pointer', fontSize: 12 }}>
-          ✏️ Refazer / Editar fechamento
+          style={{ marginTop: 12, padding: '6px 16px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', cursor: 'pointer', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <Pencil aria-hidden="true" size={12} /> Refazer / Editar fechamento
         </button>
       </div>
     ) : <>
       <div style={cardStyle}>
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>💵 Fundo de Caixa</div>
+        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><Banknote aria-hidden="true" size={14} color="var(--amarelo)" /> Fundo de Caixa</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           <div>
-            <label style={labelStyle}>🏦 Fundo de caixa (troco inicial)</label>
+            <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 5 }}><Landmark aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Fundo de caixa (troco inicial)</label>
             <input type="number" step="0.01" value={fundoCaixa} onChange={e => setFundoCaixa(e.target.value)} placeholder="0,00" style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>🔢 Caixa contado no fim do dia</label>
+            <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 5 }}><Calculator aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Caixa contado no fim do dia</label>
             <input type="number" step="0.01" value={caixaContado} onChange={e => setCaixaContado(e.target.value)} placeholder="0,00" style={inputStyle} />
           </div>
         </div>
@@ -413,7 +421,9 @@ export default function FechamentoPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 4 }}>
             <span style={{ color: 'var(--muted)' }}>Diferença (sobra/falta):</span>
             <span style={{ fontWeight: 700, color: diferencaCaixa === 0 ? 'var(--verde)' : (diferencaCaixa > 0 ? 'var(--verde)' : 'var(--vermelho)') }}>
-              {diferencaCaixa === 0 ? '✔ Caixa certo' : `${diferencaCaixa > 0 ? `✅ Sobrou ${fmtCurrency(diferencaCaixa)}` : `❌ Faltou ${fmtCurrency(Math.abs(diferencaCaixa))}`}`}
+              {diferencaCaixa === 0 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><CheckCircle2 aria-hidden="true" size={12} /> Caixa certo</span> : (diferencaCaixa > 0
+                  ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><ArrowUpCircle aria-hidden="true" size={12} /> Sobrou {fmtCurrency(diferencaCaixa)}</span>
+                  : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><ArrowDownCircle aria-hidden="true" size={12} /> Faltou {fmtCurrency(Math.abs(diferencaCaixa))}</span>)}
             </span>
           </div>
         )}
@@ -422,7 +432,7 @@ export default function FechamentoPage() {
       <div style={cardStyle}>
         <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Despesas do Dia</div>
         <div>
-          <label style={labelStyle}>📝 Total Despesas (R$)</label>
+          <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 5 }}><Receipt aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Total Despesas (R$)</label>
           <input type="number" step="0.01" value={totalDespesas} onChange={e => setTotalDespesas(e.target.value)} placeholder="0,00" style={inputStyle} />
         </div>
       </div>
@@ -431,15 +441,15 @@ export default function FechamentoPage() {
         <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Clientes e Volume</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
           <div>
-            <label style={labelStyle}>👥 Clientes</label>
+            <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 5 }}><Users aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> Clientes</label>
             <input type="number" value={clientes} onChange={e => setClientes(e.target.value)} placeholder="0" style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>⚖️ KG Self-Service</label>
+            <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 5 }}><Scale aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> KG Self-Service</label>
             <input type="number" step="0.1" value={kgSelf} onChange={e => setKgSelf(e.target.value)} placeholder="0,0" style={inputStyle} />
           </div>
           <div>
-            <label style={labelStyle}>🥩 KG Churrasco</label>
+            <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 5 }}><Beef aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> KG Churrasco</label>
             <input type="number" step="0.1" value={kgChurrasco} onChange={e => setKgChurrasco(e.target.value)} placeholder="0,0" style={inputStyle} />
           </div>
         </div>
@@ -448,7 +458,7 @@ export default function FechamentoPage() {
       {carnes.length > 0 && (
         <div style={cardStyle}>
           <div onClick={() => setShowCarnes(!showCarnes)} style={{ display: 'flex', justifyContent: 'space-between', cursor: 'pointer' }}>
-            <span style={{ fontSize: 13, fontWeight: 600 }}>🥩 Baixa de Estoque (Carnes)</span>
+            <span style={{ fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}><Beef aria-hidden="true" size={14} style={{ color: 'var(--muted)' }} /> Baixa de Estoque (Carnes)</span>
             <span style={{ color: 'var(--muted)', fontSize: 12 }}>{showCarnes ? '▲' : '▼'}</span>
           </div>
           {showCarnes && <>
@@ -476,7 +486,7 @@ export default function FechamentoPage() {
 
       {(totalVendas > 0 || despesas > 0 || custoConsumo > 0) && (
         <div style={{ ...cardStyle, borderColor: 'var(--accent)' }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)', marginBottom: 8 }}>📊 Resultado do Dia</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><BarChart3 aria-hidden="true" size={15} color="var(--accent)" /> Resultado do Dia</div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
             <span>Vendas (todas as formas)</span><span style={{ color: 'var(--verde)' }}>{fmtCurrency(totalVendas)}</span>
           </div>
@@ -505,10 +515,10 @@ export default function FechamentoPage() {
             const metaTolerancia = config.tolerancia ? meta + config.tolerancia : 0
             return <div style={{ borderTop: '1px solid var(--border)', margin: '6px 0', paddingTop: 6 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--muted)', marginBottom: 3 }}>
-                <span>🍳 Break-even diário (custos fixos)</span><span style={{ fontWeight: 600, color: coberto ? 'var(--verde)' : 'var(--vermelho)' }}>{fmtCurrency(meta)}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--muted)' }}><Flame aria-hidden="true" size={12} style={{ color: 'var(--muted)' }} /> Break-even diário (custos fixos)</span><span style={{ fontWeight: 600, color: coberto ? 'var(--verde)' : 'var(--vermelho)' }}>{fmtCurrency(meta)}</span>
               </div>
-              {coberto && <div style={{ fontSize: 11, color: 'var(--verde)' }}>✔ Vendas cobrem os custos fixos de hoje.</div>}
-              {!coberto && <div style={{ fontSize: 11, color: 'var(--vermelho)' }}>⚠ Faltam {fmtCurrency(meta - totalVendas)} p/ cobrir custos fixos.</div>}
+              {coberto && <div style={{ fontSize: 11, color: 'var(--verde)', display: 'flex', alignItems: 'center', gap: 4 }}><CheckCircle2 aria-hidden="true" size={12} /> Vendas cobrem os custos fixos de hoje.</div>}
+              {!coberto && <div style={{ fontSize: 11, color: 'var(--vermelho)', display: 'flex', alignItems: 'center', gap: 4 }}><AlertTriangle aria-hidden="true" size={12} /> Faltam {fmtCurrency(meta - totalVendas)} p/ cobrir custos fixos.</div>}
               {config.tolerancia ? <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>Faixa de tolerância: até {fmtCurrency(metaTolerancia)}.</div> : null}
             </div>
           })() : null}
@@ -541,22 +551,22 @@ export default function FechamentoPage() {
 
       <button onClick={fecharDia} disabled={salvando || totalVendas <= 0}
         style={{ width: '100%', height: 48, background: 'var(--accent)', color: 'var(--bg)', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', opacity: (salvando || totalVendas <= 0) ? 0.5 : 1 }}>
-        {salvando ? 'Salvando...' : totalVendas > 0 ? `✅ Fechar Dia — ${fmtCurrency(totalVendas)}` : 'Informe as vendas do dia'}
+        {salvando ? 'Salvando...' : totalVendas > 0 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><CheckCircle2 aria-hidden="true" size={17} /> Fechar Dia — {fmtCurrency(totalVendas)}</span> : 'Informe as vendas do dia'}
       </button>
     </>}
 
     {historico.filter(f => f.fechado).length > 1 && (
       <div style={{ ...cardStyle, marginTop: 20 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>📋 Últimos Fechamentos</div>
+        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><FolderOpen aria-hidden="true" size={14} style={{ color: 'var(--muted)' }} /> Últimos Fechamentos</div>
         {historico.filter(f => f.fechado).slice(0, 7).map(f => (
           <div key={f.data} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, padding: '6px 0', borderBottom: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => selecionarData(f.data)}>
             <span style={{ flex: 1, color: 'var(--muted)' }}>{new Date(f.data + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}</span>
-            {f.vendas_delivery ? <span title={`Delivery: bruto ${fmtCurrency(f.vendas_delivery_bruto || 0)} / real ${fmtCurrency(f.vendas_delivery)}`}>🛵 {fmtCurrency(f.vendas_delivery)}</span> : null}
+            {f.vendas_delivery ? <span title={`Delivery: bruto ${fmtCurrency(f.vendas_delivery_bruto || 0)} / real ${fmtCurrency(f.vendas_delivery)}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}><Bike aria-hidden="true" size={12} style={{ color: 'var(--muted)' }} /> {fmtCurrency(f.vendas_delivery)}</span> : null}
             <span>Vendas: {fmtCurrency(f.total_vendas || 0)}</span>
             <span style={{ color: (f.lucro || 0) >= 0 ? 'var(--verde)' : 'var(--vermelho)' }}>{fmtCurrency(f.lucro || 0)}</span>
             <span style={{ display: 'flex', gap: 4 }} onClick={e => e.stopPropagation()}>
-              <button onClick={() => abrirEdicao(f)} style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 5, padding: '2px 6px', cursor: 'pointer', fontSize: 11 }}>✏️</button>
-              <button onClick={() => abrirEdicao(f)} style={{ background: 'transparent', border: '1px solid var(--vermelho)', borderRadius: 5, padding: '2px 6px', cursor: 'pointer', fontSize: 11, color: 'var(--vermelho)' }}>🗑️</button>
+              <button onClick={() => abrirEdicao(f)} aria-label="Editar fechamento" style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 5, padding: '2px 6px', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Pencil aria-hidden="true" size={12} /></button>
+              <button onClick={() => abrirEdicao(f)} aria-label="Excluir fechamento" style={{ background: 'transparent', border: '1px solid var(--vermelho)', borderRadius: 5, padding: '2px 6px', cursor: 'pointer', fontSize: 11, color: 'var(--vermelho)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 aria-hidden="true" size={12} /></button>
             </span>
           </div>
         ))}
@@ -564,16 +574,18 @@ export default function FechamentoPage() {
     )}
 
     {editando && (
-      <Modal titulo={`✏️ Editar Fechamento — ${new Date(editando.data + 'T12:00:00').toLocaleDateString('pt-BR')}`} onClose={() => setEditando(null)}>
+      <Modal titulo={`Editar Fechamento — ${new Date(editando.data + 'T12:00:00').toLocaleDateString('pt-BR')}`} onClose={() => setEditando(null)}>
         <div style={{ display: 'grid', gap: 8 }}>
-          {[['dinheiro', '💵 Dinheiro'], ['credito', '💳 Crédito'], ['debito', '💳 Débito'], ['pix', '📱 Pix'], ['vale', '🎫 Vale'], ['delivery', '🛵 Delivery']].map(([k, label]) => (
+          {[{ key: 'dinheiro', Icon: Banknote, txt: 'Dinheiro' }, { key: 'credito', Icon: CreditCard, txt: 'Crédito' }, { key: 'debito', Icon: CreditCard, txt: 'Débito' }, { key: 'pix', Icon: Smartphone, txt: 'Pix' }, { key: 'vale', Icon: Ticket, txt: 'Vale' }, { key: 'delivery', Icon: Bike, txt: 'Delivery' }].map(({ key: k, Icon: EIcon, txt }) => (
             <div key={k}>
-              <label style={{ fontSize: 11, color: 'var(--muted)' }}>{label}</label>
+              <label style={{ fontSize: 11, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <EIcon aria-hidden="true" size={13} style={{ color: 'var(--muted)' }} /> {txt}
+              </label>
               <input className="form-input" type="number" step="0.01" value={editValores[k] || ''} onChange={e => setEditValores(prev => ({ ...prev, [k]: e.target.value }))} style={{ marginTop: 2 }} />
             </div>
           ))}
           <div>
-            <label style={{ fontSize: 11, color: 'var(--muted)' }}>🛵 Delivery — Venda Bruta (cliente pagou)</label>
+            <label style={{ fontSize: 11, color: 'var(--muted)' }}>Delivery — Venda Bruta (cliente pagou)</label>
             <input className="form-input" type="number" step="0.01" value={editDeliveryBruto} onChange={e => setEditDeliveryBruto(e.target.value)} style={{ marginTop: 2 }} />
           </div>
           <div>
@@ -600,8 +612,8 @@ export default function FechamentoPage() {
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={() => setEditando(null)} style={{ flex: 1, padding: '9px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--fg)', cursor: 'pointer' }}>Cancelar</button>
-            <button onClick={salvarEdicao} disabled={salvandoEdit} className="btn btn-primary" style={{ flex: 2 }}>{salvandoEdit ? '⏳' : 'Salvar'}</button>
-            <button onClick={excluirFechamento} disabled={excluindo} style={{ flex: 1, borderRadius: 8, border: '1px solid var(--vermelho)', background: 'var(--vermelho)', color: '#fff', cursor: 'pointer' }}>{excluindo ? '⏳' : '🗑️'}</button>
+            <button onClick={salvarEdicao} disabled={salvandoEdit} className="btn btn-primary" style={{ flex: 2 }}>{salvandoEdit ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Clock aria-hidden="true" size={15} /> ...</span> : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Save aria-hidden="true" size={15} /> Salvar</span>}</button>
+            <button onClick={excluirFechamento} disabled={excluindo} style={{ flex: 1, borderRadius: 8, border: '1px solid var(--vermelho)', background: 'var(--vermelho)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{excluindo ? <Clock aria-hidden="true" size={15} /> : <Trash2 aria-hidden="true" size={15} />}</button>
           </div>
         </div>
       </Modal>

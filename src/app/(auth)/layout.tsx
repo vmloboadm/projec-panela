@@ -3,6 +3,8 @@ import { useRouter } from 'next/navigation'
 import AuthGuard from '@/app/components/AuthGuard'
 import PinLock from '@/app/components/PinLock'
 import TabBar from '@/app/components/TabBar'
+import Sidebar from '@/app/components/Sidebar'
+import { Settings, User, LogOut } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -26,21 +28,33 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <AuthGuard>
       <PinLock>
-        <div className="layout">
+        <div className="layout layout-shell">
+          <Sidebar />
           <header className="header">
+            <img src="/logo-panela-png.png" alt="Panela da Roça" className="header-logo" />
             <div className="header-titulo" style={{ cursor: 'pointer', minWidth: 0 }} onClick={() => router.push('/dashboard')}>
               <strong style={{ display: 'block' }}>{nome}</strong>
               <div className="date">{dateStr}</div>
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', position: 'relative' }}>
               <button aria-label="Configurações" onClick={() => router.push('/configuracoes')}
-                style={{ width: 36, height: 36, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', color: 'var(--muted)', fontSize: 15 }}>⚙️</button>
-              <div className="user-menu" onClick={() => setMenuAberto(v => !v)}>👤</div>
+                style={{ width: 40, height: 40, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 10, cursor: 'pointer', color: 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'color 0.2s, border-color 0.2s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--muted)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)' }}>
+                <Settings aria-hidden="true" size={17} />
+              </button>
+              <div className="user-menu" onClick={() => setMenuAberto(v => !v)} style={{ cursor: 'pointer' }}>
+                <User aria-hidden="true" size={18} />
+              </div>
               {menuAberto && (
                 <div style={{ position: 'absolute', top: 44, right: 0, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.4)', padding: 6, zIndex: 200, minWidth: 180 }}>
                   <div style={{ padding: '8px 10px', fontSize: 13, fontWeight: 600, borderBottom: '1px solid var(--border)', marginBottom: 4 }}>Admin</div>
-                  <button onClick={() => ir('/configuracoes')} className="menu-item">⚙️ Configurações</button>
-                  <button onClick={sair} className="menu-item" style={{ color: 'var(--vermelho)' }}>🚪 Sair</button>
+                  <button onClick={() => ir('/configuracoes')} className="menu-item">
+                    <Settings aria-hidden="true" size={14} style={{ color: 'var(--muted)' }} /> Configurações
+                  </button>
+                  <button onClick={sair} className="menu-item" style={{ color: 'var(--vermelho)' }}>
+                    <LogOut aria-hidden="true" size={14} /> Sair
+                  </button>
                 </div>
               )}
             </div>

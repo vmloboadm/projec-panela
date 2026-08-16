@@ -6,6 +6,9 @@ import { Loading, CategoryPicker } from '@/app/components/Shared'
 import { itemSchema } from '@/lib/schemas'
 import toast from 'react-hot-toast'
 import { useQueryClient } from '@tanstack/react-query'
+import {
+  Pencil, Sparkles, Camera, Plus, Trash2, Clock, CheckCircle2, ClipboardList, Save,
+} from 'lucide-react'
 
 type Item = {
   id: string
@@ -214,7 +217,9 @@ export default function NovoPage() {
         <button key={t} onClick={() => setAba(t)}
           style={{ flex: 1, padding: '8px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             background: aba === t ? 'var(--accent)' : 'var(--surface)', color: aba === t ? 'var(--bg)' : 'var(--muted)', transition: 'all 0.2s' }}>
-          {t === 'manual' ? '✏️ Manual' : t === 'ia' ? '🤖 IA' : '📸 Foto'}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            {t === 'manual' ? <><Pencil aria-hidden="true" size={12} /> Manual</> : t === 'ia' ? <><Sparkles aria-hidden="true" size={12} /> IA</> : <><Camera aria-hidden="true" size={12} /> Foto</>}
+          </span>
         </button>
       ))}
     </div>
@@ -222,18 +227,18 @@ export default function NovoPage() {
     {aba === 'manual' && <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 16, border: '1px solid var(--border)', marginBottom: 12 }}>
       <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
         <select className="form-select" value={manualRegistro} onChange={e => setManualRegistro(e.target.value as any)} style={{ flex: 1 }}>
-          <option value="lancamento">📊 Lançamento</option>
-          <option value="conta_a_pagar">📄 Conta a Pagar</option>
-          <option value="insumo_churrasco">🥩 Insumo Churrasco</option>
+          <option value="lancamento">Lançamento</option>
+          <option value="conta_a_pagar">Conta a Pagar</option>
+          <option value="insumo_churrasco">Insumo Churrasco</option>
         </select>
         <select className="form-select" value={manualTipoReg} onChange={e => setManualTipoReg(e.target.value as any)} style={{ flex: 1 }}>
-          <option value="despesa">🔥 Despesa</option>
-          <option value="receita">💰 Receita</option>
+          <option value="despesa">Despesa</option>
+          <option value="receita">Receita</option>
         </select>
       </div>
       <div style={{ display: 'flex', gap: 6 }}>
         <input className="form-input" type="text" placeholder="Descrição" value={manualDesc} onChange={e => setManualDesc(e.target.value)} style={{ flex: 1 }} />
-        <button onClick={adicionarManual} style={{ padding: '10px', background: 'var(--accent)', color: 'var(--bg)', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>➕</button>
+        <button onClick={adicionarManual} aria-label="Adicionar" style={{ padding: '10px', background: 'var(--accent)', color: 'var(--bg)', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}><Plus aria-hidden="true" size={16} /></button>
       </div>
       <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
         <input className="form-input" type="number" step="0.01" placeholder="Valor (R$)" value={manualValor} onChange={e => setManualValor(e.target.value)} style={{ flex: 1 }} />
@@ -252,7 +257,7 @@ export default function NovoPage() {
         <input className="form-input" placeholder="Preço por kg (R$)" value={manualPrecoKg} onChange={e => setManualPrecoKg(e.target.value)} />
         <input className="form-input" placeholder="Fornecedor" value={manualFornecedor} onChange={e => setManualFornecedor(e.target.value)} />
       </>}
-      <button onClick={adicionarManual} style={{ width: '100%', padding: '10px', background: 'var(--accent)', color: 'var(--bg)', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', marginTop: 8 }}>➕ Adicionar Item</button>
+      <button onClick={adicionarManual} style={{ width: '100%', padding: '10px', background: 'var(--accent)', color: 'var(--bg)', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', marginTop: 8 }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Plus aria-hidden="true" size={14} /> Adicionar Item</span></button>
     </div>}
 
     {aba === 'ia' && <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 16, border: '1px solid var(--border)', marginBottom: 12 }}>
@@ -261,28 +266,28 @@ export default function NovoPage() {
       </div>
       <textarea className="ia-input" rows={5} value={textoIA} onChange={e => setTextoIA(e.target.value)} placeholder={"Ex: Carne picanha 89,90\nCoca cola 21,00\nAlface e tomate 12,40\nSal e pimenta 9,60\nInseticida Bayer 28,90\nFaca de churrasco 45,00"} />
       <button onClick={processarIA} disabled={processando || !textoIA.trim()} style={{ width: '100%', marginTop: 8, padding: '10px', background: 'var(--accent)', color: 'var(--bg)', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', opacity: (processando || !textoIA.trim()) ? 0.5 : 1 }}>
-        {processando ? `⏳ Separando... ${tempoIA}s` : '🤖 Categorizar com IA'}
+        {processando ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Clock aria-hidden="true" size={14} /> Separando... {tempoIA}s</span> : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Sparkles aria-hidden="true" size={14} /> Categorizar com IA</span>}
       </button>
       {processando && <div style={{ fontSize: 11, color: 'var(--muted)', textAlign: 'center', marginTop: 6 }}>Isso pode levar até 30s — pode navegar à vontade, o rascunho fica salvo.</div>}
     </div>}
 
     {aba === 'foto' && <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 16, border: '1px solid var(--border)', textAlign: 'center' }}>
-      <p style={{ color: 'var(--muted)' }}>📸 Em breve: upload de fotos e boletos</p>
+      <p style={{ color: 'var(--muted)', display: 'inline-flex', alignItems: 'center', gap: 6 }}><Camera aria-hidden="true" size={14} /> Em breve: upload de fotos e boletos</p>
     </div>}
 
     {itens.length > 0 && <div style={{ marginTop: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-        <h3 style={{ fontSize: 14, fontWeight: 600 }}>📋 {itens.length} item(ns) para confirmar</h3>
-        <button onClick={() => { if (confirm('Limpar todos os itens pendentes?')) { setItens([]); try { localStorage.removeItem(RASCUNHO_KEY) } catch {} } }} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: 'var(--vermelho)', cursor: 'pointer', fontSize: 12 }}>🗑️ Limpar tudo</button>
+        <h3 style={{ fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}><ClipboardList aria-hidden="true" size={14} style={{ color: 'var(--muted)' }} /> {itens.length} item(ns) para confirmar</h3>
+        <button onClick={() => { if (confirm('Limpar todos os itens pendentes?')) { setItens([]); try { localStorage.removeItem(RASCUNHO_KEY) } catch {} } }} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: 'var(--vermelho)', cursor: 'pointer', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Trash2 aria-hidden="true" size={12} /> Limpar tudo</button>
       </div>
-      <div style={{ fontSize: 11, color: 'var(--muted)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', marginBottom: 8 }}>
-        💾 Rascunho salvo automaticamente — você pode sair desta tela e voltar, os itens continuam aqui. Clique em <strong>CONFIRMAR TODOS</strong> para salvar no app.
+      <div style={{ fontSize: 11, color: 'var(--muted)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 10px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+        <Save aria-hidden="true" size={12} style={{ flexShrink: 0 }} /> Rascunho salvo automaticamente — você pode sair desta tela e voltar, os itens continuam aqui. Clique em <strong>CONFIRMAR TODOS</strong> para salvar no app.
       </div>
       {itens.map((item, idx) => (
         <div key={item.id} style={{ background: 'var(--surface)', borderRadius: 10, padding: 12, border: '1px solid var(--border)', marginBottom: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
             <span style={{ fontSize: 12, color: 'var(--muted)' }}>Item {idx+1} de {itens.length}</span>
-            <button onClick={() => removerItem(item.id)} style={{ background: 'transparent', border: 'none', color: 'var(--vermelho)', cursor: 'pointer' }}>🗑️ Remover</button>
+            <button onClick={() => removerItem(item.id)} aria-label="Remover item" style={{ background: 'transparent', border: 'none', color: 'var(--vermelho)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Trash2 aria-hidden="true" size={12} /> Remover</button>
           </div>
           <div style={{ display: 'grid', gap: 6 }}>
             <input className="form-input" value={item.descricao} onChange={e => atualizarItem(item.id, 'descricao', e.target.value)} />
@@ -291,9 +296,9 @@ export default function NovoPage() {
               <CategoryPicker categorias={categorias} value={item.categoria} onChange={(id) => atualizarItem(item.id, 'categoria', id)} />
             </div>
             <select className="form-select" value={item.tipo_registro} onChange={e => atualizarItem(item.id, 'tipo_registro', e.target.value)}>
-              <option value="lancamento">📊 Lançamento</option>
-              <option value="conta_a_pagar">📄 Conta a Pagar</option>
-              <option value="insumo_churrasco">🥩 Insumo Churrasco</option>
+              <option value="lancamento">Lançamento</option>
+              <option value="conta_a_pagar">Conta a Pagar</option>
+              <option value="insumo_churrasco">Insumo Churrasco</option>
             </select>
             {item.tipo_registro === 'conta_a_pagar' && <input className="form-input" type="date" value={item.data_vencimento || ''} onChange={e => atualizarItem(item.id, 'data_vencimento', e.target.value)} />}
             {item.tipo_registro === 'insumo_churrasco' && (
@@ -313,7 +318,7 @@ export default function NovoPage() {
         </div>
       ))}
       <button onClick={salvarTodos} disabled={salvando} style={{ width: '100%', padding: '12px', background: 'var(--verde)', color: 'var(--bg)', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 16, cursor: 'pointer', opacity: salvando ? 0.5 : 1 }}>
-        {salvando ? '⏳ Salvando...' : `✅ CONFIRMAR TODOS (${itens.length} itens)`}
+        {salvando ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Clock aria-hidden="true" size={15} /> Salvando...</span> : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><CheckCircle2 aria-hidden="true" size={16} /> CONFIRMAR TODOS ({itens.length} itens)</span>}
       </button>
     </div>}
   </>
