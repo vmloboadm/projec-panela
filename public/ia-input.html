@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IA — Lançamento Rápido — Panela da Roça</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;510;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: oklch(15% 0.02 40);
+      --surface: oklch(22% 0.025 40);
+      --fg: oklch(95% 0.01 60);
+      --muted: oklch(65% 0.02 50);
+      --border: oklch(35% 0.03 45);
+      --accent: oklch(62% 0.14 45);
+      --verde: oklch(55% 0.10 140);
+      --vermelho: oklch(48% 0.16 28);
+      --font-body: 'Inter', system-ui, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--fg); min-height: 100vh; padding-bottom: 80px; }
+    
+    .header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .btn-back { width: 36px; height: 36px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); }
+    .page-title { font-size: 16px; font-weight: 600; flex: 1; text-align: center; }
+    .user-menu { width: 36px; height: 36px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 600; }
+    
+    .main { padding: 16px; max-width: 480px; margin: 0 auto; }
+    
+    .canal-btn {
+      flex: 1; min-width: 80px; padding: 10px 6px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      font-size: 12px; font-weight: 510; cursor: pointer; text-align: center; gap: 6px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .canal-btn.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+    .canal-icon { font-size: 18px; }
+    .canal-label { margin-top: 4px; }
+    
+    .canals { display: flex; gap: 10px; margin-bottom: 24px; }
+    
+    .input-section { background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+    .input-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 8px; }
+    .text-input { width: 100%; min-height: 120px; padding: 12px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px; color: var(--fg); font-family: var(--font-body);
+      font-size: 14px; resize: vertical; }
+    .text-input:focus { outline: none; border-color: var(--accent); }
+    
+    .examples { margin-top: 12px; }
+    .example-item { padding: 8px 12px; background: var(--bg); border-radius: 8px;
+      font-size: 13px; color: var(--fg); cursor: pointer; margin-bottom: 6px; transition: background 0.2s; }
+    .example-item:hover { background: oklch(22% 0.025 40 / 0.8); }
+    
+    .submit-btn { width: 100%; height: 52px; border: none; border-radius: 12px;
+      font-family: var(--font-body); font-size: 16px; font-weight: 600; cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s; }
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn.processing { opacity: 0.7; }
+    
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--surface); border-top: 1px solid var(--border);
+      display: flex; justify-content: space-around; padding: 8px 0 max(8px, env(safe-area-inset-bottom)); z-index: 100; }
+    .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 8px 0; text-decoration: none; color: var(--muted); font-size: 10px; font-weight: 510; }
+    .tab-item.active { color: var(--accent); }
+    .tab-icon { font-size: 20px; }
+    
+    .success { text-align: center; padding: 40px 20px; }
+    .success .icon { font-size: 48px; margin-bottom: 12px; }
+    .success .text { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+    .success .btn { display: inline-block; padding: 12px 24px; background: var(--accent); color: var(--bg);
+      border: none; border-radius: 10px; font-family: var(--font-body); font-size: 14px; font-weight: 600;
+      cursor: pointer; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a href="/lancamentos" class="btn-back">←</a>
+    <span class="page-title">Lançamento por Texto</span>
+    <div class="user-menu" id="userMenu">PR</div>
+  </header>
+
+  <main class="main">
+    <div class="canals">
+      <a href="/ia-input?canal=texto" class="canal-btn active"><span class="canal-icon">✍️</span><span class="canal-label">Texto</span></a>
+      <a href="/novo-lancamento" class="canal-btn"><span class="canal-icon">💰</span><span class="canal-label">Manual</span></a>
+    </div>
+
+    <div class="input-section">
+      <div class="input-label">Digite o lançamento</div>
+      <textarea class="text-input" id="textoInput" placeholder="Ex: Paguei R$ 150 de gás hoje&#10;Ex: Recebi R$ 820 do delivery"></textarea>
+      
+      <div class="examples">
+        <div class="example-item" onclick="setExample('Paguei R$ 150 de gás hoje')">Paguei R$ 150 de gás hoje</div>
+        <div class="example-item" onclick="setExample('Recebi R$ 820 do delivery')">Recebi R$ 820 do delivery</div>
+        <div class="example-item" onclick="setExample('Comprei R$ 350 de carne no açougue')">Comprei R$ 350 de carne</div>
+        <div class="example-item" onclick="setExample('Venda de almoço R$ 280')">Venda de almoço R$ 280</div>
+      </div>
+    </div>
+
+    <button class="submit-btn verde" id="submitBtn" onclick="processarTexto()">
+      Processar com IA
+    </button>
+
+    <div class="success" id="successArea" style="display:none;">
+      <div class="icon">✅</div>
+      <div class="text" id="successText">Lançamento criado!</div>
+      <div class="btn" onclick="voltar()">Voltar ao Painel</div>
+    </div>
+  </main>
+
+
+  <script src="auth.js"></script>
+  <script>
+    if (!requireAuth()) throw new Error('not auth');
+
+    function setExample(texto) {
+      document.getElementById('textoInput').value = texto;
+      document.getElementById('submitBtn').disabled = false;
+    }
+
+    async function processarTexto() {
+      const texto = document.getElementById('textoInput').value.trim();
+      if (!texto) return;
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Processando...';
+      btn.classList.add('processing');
+
+      try {
+        const res = await apiPost('/api/ia/texto', { texto });
+        if (res && res.pendencia_id) {
+          // Buscar pendencia processada
+          const pendencia = await apiGet('/api/ia/pendencias/' + res.pendencia_id);
+          if (pendencia && pendencia.sugestao) {
+            // Criar lançamento com a sugestão
+            const lanc = await apiPost('/api/lancamentos', pendencia.sugestao);
+            if (lanc) {
+              document.getElementById('formArea').style.display = 'none';
+              document.getElementById('successArea').style.display = 'block';
+              document.getElementById('successText').textContent = 
+                pendencia.sugestao.tipo === 'receita' 
+                  ? 'Receita registrada!' 
+                  : 'Despesa registrada!';
+            }
+          }
+        }
+      } catch (err) {
+        alert('Erro ao processar: ' + err);
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Processar com IA';
+      btn.classList.remove('processing');
+    }
+
+    function voltar() {
+      window.location.href = '/dashboard';
+    }
+
+    document.getElementById('textoInput').addEventListener('input', function() {
+      document.getElementById('submitBtn').disabled = !this.value.trim();
+    });
+
+    document.getElementById('userMenu').onclick = logout;
+  </script>
+  <nav class="tab-bar">
+    <a href="/dashboard" class="tab-item"><div class="tab-icon">🏠</div><span>Dashboard</span></a>
+    <a href="/fechamento" class="tab-item"><div class="tab-icon">📊</div><span>Fechamento</span></a>
+    <a href="/churrasco" class="tab-item"><div class="tab-icon">🥩</div><span>Churrasco</span></a>
+    <a href="/lancamentos" class="tab-item"><div class="tab-icon">📋</div><span>Lançamentos</span></a>
+    <a href="/contas-a-pagar" class="tab-item"><div class="tab-icon">📅</div><span>A Pagar</span></a>
+  </nav>
+</body>
+</html>

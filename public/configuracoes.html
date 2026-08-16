@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações — Panela da Roça</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;510;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: oklch(15% 0.02 40);
+      --surface: oklch(22% 0.025 40);
+      --fg: oklch(95% 0.01 60);
+      --muted: oklch(65% 0.02 50);
+      --border: oklch(35% 0.03 45);
+      --accent: oklch(62% 0.14 45);
+      --red-tijolo: oklch(48% 0.16 28);
+      --verde-pago: oklch(55% 0.10 140);
+      --vermelho-atrasado: oklch(48% 0.16 28);
+      --font-display: 'Rye', 'Alfa Slab One', Georgia, serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .btn-back {
+      width: 36px;
+      height: 36px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .page-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 20px;
+    }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .menu-item:hover {
+      opacity: 0.7;
+    }
+
+    .menu-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .menu-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--bg);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .menu-icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: currentColor;
+      color: var(--muted);
+    }
+
+    .menu-label {
+      font-size: 15px;
+      font-weight: 510;
+      color: var(--fg);
+    }
+
+    .menu-arrow {
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 48px;
+      padding: 0 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: 15px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px oklch(62% 0.14 45 / 0.15);
+    }
+
+    .logo-upload-area {
+      width: 100%;
+      height: 120px;
+      background: var(--bg);
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .logo-upload-area:hover {
+      border-color: var(--accent);
+      background: oklch(18% 0.02 40);
+    }
+
+    .logo-upload-icon {
+      width: 32px;
+      height: 32px;
+      opacity: 0.6;
+    }
+
+    .logo-upload-icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: currentColor;
+    }
+
+    .logo-upload-text {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .logo-preview {
+      width: 100%;
+      max-height: 120px;
+      object-fit: contain;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .logo-preview.visible {
+      display: block;
+    }
+
+    .btn-primary {
+      width: 100%;
+      height: 48px;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      margin-top: 16px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px oklch(62% 0.14 45 / 0.3);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-danger {
+      width: 100%;
+      height: 48px;
+      background: transparent;
+      color: var(--red-tijolo);
+      border: 1px solid var(--red-tijolo);
+      border-radius: 10px;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-danger:hover {
+      background: oklch(48% 0.16 28 / 0.1);
+    }
+
+    .info-box {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 0;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 510;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+
+    .tab-item.active {
+      color: var(--accent);
+    }
+
+    .tab-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    @media (min-width: 768px) {
+      .main-content {
+        max-width: 960px;
+        padding: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo-small">
+      <img src="logo-panela-png.png" alt="Panela da Roça">
+    </div>
+    <div class="user-menu" data-od-id="user-menu">
+      PR
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title" data-od-id="page-title">Configurações</h1>
+
+    <div class="section" data-od-id="identidade-section">
+      <div class="section-title">Identidade do restaurante</div>
+
+      <div class="form-group">
+        <label class="form-label">Logo</label>
+        <div class="logo-upload-area" data-od-id="logo-upload">
+          <div class="logo-upload-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+          </div>
+          <div class="logo-upload-text">Clique para enviar o logo</div>
+        </div>
+        <img class="logo-preview" id="logoPreview" alt="Preview do logo">
+        <input type="file" id="logoInput" accept="image/*" style="display: none;">
+      </div: none;">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nome do restaurante</label>
+        <input
+          type="text"
+          class="form-input"
+          id="nomeRestaurante"
+          placeholder="Nome do restaurante"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Endereço</label>
+        <input
+          type="text"
+          class="form-input"
+          id="endereco"
+          placeholder="Endereço do restaurante"
+        >
+      </div>
+
+      <!-- API Keys de IA -->
+      <div class="form-group">
+        <label class="form-label">Provedor de IA</label>
+        <select class="form-input" id="aiProvider">
+          <option value="openai">OpenAI (GPT)</option>
+          <option value="gemini">Google Gemini</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Chave da API OpenAI</label>
+        <input
+          type="password"
+          class="form-input"
+          id="openaiApiKey"
+          placeholder="sk-... (deixe vazio para não usar)"
+        >
+        <small class="muted" style="display:block;margin-top:4px;">Obtenha em https://platform.openai.com/api-keys</small>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Chave da API Gemini</label>
+        <input
+          type="password"
+          class="form-input"
+          id="geminiApiKey"
+          placeholder="AIza... (deixe vazio para não usar)"
+        >
+        <small class="muted" style="display:block;margin-top:4px;">Obtenha em https://makersuite.google.com/app/apikey</small>
+      </div>
+
+      <button class="btn-primary">Salvar alterações</button>
+    </div>
+
+    <div class="section" data-od-id="menu-section">
+      <div class="section-title">Gestão</div>
+
+      <a href="/contas" class="menu-item" data-od-id="menu-contas">
+        <div class="menu-item-left">
+          <div class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2"/>
+              <line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+          </div>
+          <div class="menu-label">Gerenciar contas</div>
+        </div>
+        <div class="menu-arrow">→</div>
+      </a>
+
+      <a href="/categorias" class="menu-item" data-od-id="menu-categorias">
+        <div class="menu-item-left">
+          <div class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+              <line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
+          </div>
+          <div class="menu-label">Gerenciar categorias</div>
+        </div>
+        <div class="menu-arrow">→</div>
+      </a>
+
+      <a href="/churrasco" class="menu-item" data-od-id="menu-churrasco">
+        <div class="menu-item-left">
+          <div class="menu-icon"><span style="font-size:20px">🥩</span></div>
+          <div class="menu-label">Churrasco (carnes)</div>
+        </div>
+        <div class="menu-arrow">→</div>
+      </a>
+
+      <a href="/fechamento" class="menu-item" data-od-id="menu-fechamento">
+        <div class="menu-item-left">
+          <div class="menu-icon"><span style="font-size:20px">📊</span></div>
+          <div class="menu-label">Fechamento do Dia</div>
+        </div>
+        <div class="menu-arrow">→</div>
+      </a>
+
+      <div class="menu-item" data-od-id="menu-exportar">
+        <div class="menu-item-left">
+          <div class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+            </svg>
+          </div>
+          <div class="menu-label">Exportar dados</div>
+        </div>
+        <div class="menu-arrow">→</div>
+      </div>
+    </div>
+
+    <div class="section" data-od-id="exportar-section" style="display: none;">
+      <div class="section-title">Exportar dados</div>
+
+      <div class="info-box">
+        Gere um arquivo CSV ou Excel com todos os lançamentos do período selecionado para enviar ao contador ou fazer backup.
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Período</label>
+        <select class="form-input" id="periodoExport">
+          <option value="mes-atual">Este mês (jul/2026)</option>
+          <option value="mes-anterior">Mês passado (jun/2026)</option>
+          <option value="trimestre">Último trimestre</option>
+          <option value="semestre">Último semestre</option>
+          <option value="ano">Este ano (2026)</option>
+          <option value="todos">Todos os lançamentos</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tipo</label>
+        <select class="form-input" id="tipoExport">
+          <option value="todos">Receitas e despesas</option>
+          <option value="receita">Apenas receitas</option>
+          <option value="despesa">Apenas despesas</option>
+        </select>
+      </div>
+
+      <button class="btn-primary" data-od-id="btn-export-csv">Gerar CSV</button>
+    </div>
+
+    <div class="section" data-od-id="conta-section">
+      <div class="section-title">Conta</div>
+
+      <button class="btn-danger" data-od-id="btn-logout">Sair da conta</button>
+    </div>
+  </main>
+
+
+  <script src="auth.js"></script>
+  <script>
+    if (!requireAuth()) throw new Error('Não autenticado');
+
+    const logoUploadArea = document.querySelector('[data-od-id="logo-upload"]');
+    const logoInput = document.getElementById('logoInput');
+    const logoPreview = document.getElementById('logoPreview');
+
+    logoUploadArea.addEventListener('click', () => {
+      logoInput.click();
+    });
+
+    logoInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        logoPreview.src = e.target.result;
+        logoPreview.classList.add('visible');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    async function loadConfig() {
+      const data = await apiGet('/api/configuracao');
+      if (data) {
+        document.getElementById('nomeRestaurante').value = data.nome_restaurante || '';
+        document.getElementById('endereco').value = data.endereco || '';
+        if (data.logo_url) {
+          logoPreview.src = data.logo_url;
+          logoPreview.classList.add('visible');
+        }
+        document.getElementById('aiProvider').value = data.ai_provider || 'gemini';
+        document.getElementById('openaiApiKey').value = data.openai_api_key || '';
+        document.getElementById('geminiApiKey').value = data.gemini_api_key || '';
+      }
+    }
+    loadConfig();
+
+    const exportarSection = document.querySelector('[data-od-id="exportar-section"]');
+    document.querySelector('[data-od-id="menu-exportar"]').addEventListener('click', function() {
+      exportarSection.style.display = exportarSection.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.querySelector('[data-od-id="btn-export-csv"]').addEventListener('click', function() {
+      const periodo = document.getElementById('periodoExport').options[document.getElementById('periodoExport').selectedIndex].text;
+      const tipo = document.getElementById('tipoExport').options[document.getElementById('tipoExport').selectedIndex].text;
+
+      const csvContent = `Tipo,Valor,Categoria,Conta,Data,Descrição
+ Despesa,-1350.00,Gás,Pix Nubank,2026-07-26,Compra de gás (3 botijões P45)
+ Receita,3240.00,Receita operacional,Pix Nubank,2026-07-27,Venda almoço executivo
+ Despesa,-2800.00,Insumos,Pix Nubank,2026-07-25,Fornecedor de carnes (semanal)`;
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+
+      link.setAttribute('href', url);
+      link.setAttribute('download', `panela-da-roca-lancamentos-${periodo.toLowerCase().replace(/\s+/g, '-')}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      alert(`Exportação concluída!\n\nPeríodo: ${periodo}\nTipo: ${tipo}\n\nArquivo baixado com sucesso.`);
+    });
+
+    document.querySelector('[data-od-id="user-menu"]').addEventListener('click', function() {
+      if (confirm('Deseja realmente sair da conta?')) {
+        logout();
+      }
+    });
+
+    document.querySelector('[data-od-id="btn-logout"]').addEventListener('click', function() {
+      if (confirm('Deseja realmente sair da conta?')) {
+        logout();
+      }
+    });
+
+    document.querySelector('.btn-primary').addEventListener('click', async function() {
+      const nome = document.getElementById('nomeRestaurante').value;
+      const endereco = document.getElementById('endereco').value;
+      const logo_url = logoPreview.src || '';
+      const ai_provider = document.getElementById('aiProvider').value;
+      const openai_api_key = document.getElementById('openaiApiKey').value.trim();
+      const gemini_api_key = document.getElementById('geminiApiKey').value.trim();
+
+      const result = await apiPut('/api/configuracao', {
+        nome_restaurante: nome,
+        endereco: endereco,
+        logo_url: logo_url,
+        ai_provider: ai_provider,
+        openai_api_key: openai_api_key,
+        gemini_api_key: gemini_api_key
+      });
+
+      if (result) {
+        alert('Configurações salvas com sucesso!');
+      } else {
+        alert('Erro ao salvar configurações.');
+      }
+    });
+  </script>
+  <nav class="tab-bar">
+    <a href="/dashboard" class="tab-item"><div class="tab-icon">🏠</div><span>Dashboard</span></a>
+    <a href="/fechamento" class="tab-item"><div class="tab-icon">📊</div><span>Fechamento</span></a>
+    <a href="/churrasco" class="tab-item"><div class="tab-icon">🥩</div><span>Churrasco</span></a>
+    <a href="/lancamentos" class="tab-item"><div class="tab-icon">📋</div><span>Lançamentos</span></a>
+    <a href="/contas-a-pagar" class="tab-item"><div class="tab-icon">📅</div><span>A Pagar</span></a>
+  </nav>
+</body>
+</html>

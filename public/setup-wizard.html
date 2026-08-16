@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuração Inicial — Panela da Roça</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;510;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      oklch(15% 0.02 40);
+      --surface: oklch(22% 0.025 40);
+      --fg:      oklch(95% 0.01 60);
+      --muted:   oklch(65% 0.02 50);
+      --border:  oklch(35% 0.03 45);
+      --accent:  oklch(62% 0.14 45);
+      --red-tijolo: oklch(48% 0.16 28);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .wizard-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 480px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    .wizard-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .wizard-logo {
+      margin-bottom: 24px;
+    }
+
+    .wizard-logo img {
+      height: 80px;
+      width: auto;
+    }
+
+    .wizard-title {
+      font-family: 'Rye', Georgia, serif;
+      font-size: 28px;
+      color: var(--accent);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .wizard-subtitle {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .wizard-progress {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+      justify-content: center;
+    }
+
+    .progress-dot {
+      width: 32px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      transition: background 0.2s;
+    }
+
+    .progress-dot.active {
+      background: var(--accent);
+    }
+
+    .wizard-step {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .wizard-step.active {
+      display: flex;
+    }
+
+    .step-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .step-section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 510;
+      color: var(--fg);
+      margin-bottom: 8px;
+      letter-spacing: 0.01em;
+    }
+
+    .form-input,
+    .form-select {
+      width: 100%;
+      height: 48px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0 14px;
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--fg);
+      letter-spacing: 0.01em;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px oklch(from var(--accent) l c h / 0.12);
+    }
+
+    .logo-upload {
+      width: 100%;
+      height: 120px;
+      background: var(--bg);
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo-upload:hover {
+      border-color: var(--accent);
+    }
+
+    .logo-upload input {
+      display: none;
+    }
+
+    .logo-upload-icon {
+      width: 32px;
+      height: 32px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .logo-upload-text {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .logo-preview {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+    }
+
+    .logo-preview.visible {
+      display: flex;
+    }
+
+    .logo-preview img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .conta-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .conta-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .conta-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--surface);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .conta-icon svg {
+      width: 20px;
+      height: 20px;
+      color: var(--accent);
+    }
+
+    .conta-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .conta-nome {
+      font-size: 15px;
+      font-weight: 510;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+
+    .conta-tipo {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .conta-saldo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 510;
+      color: var(--fg);
+    }
+
+    .btn-add {
+      width: 100%;
+      height: 48px;
+      background: transparent;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 510;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-add:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .categoria-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .categoria-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .categoria-check {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .categoria-nome {
+      flex: 1;
+      font-size: 15px;
+      color: var(--fg);
+    }
+
+    .categoria-grupo {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .wizard-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 24px;
+    }
+
+    .btn {
+      flex: 1;
+      height: 48px;
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .btn-secondary:hover {
+      background: var(--surface);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    .btn-primary:hover {
+      background: oklch(from var(--accent) calc(l + 0.05) c h);
+    }
+
+    .btn-primary:active {
+      background: oklch(from var(--accent) calc(l - 0.05) c h);
+    }
+  </style>
+</head>
+<body>
+  <div class="wizard-container">
+    <div class="wizard-header">
+      <div class="wizard-logo">
+        <img src="logo-panela-png.png" alt="Panela da Roça">
+      </div>
+      <h1 class="wizard-title">Bem-vindo!</h1>
+      <p class="wizard-subtitle">Configure o sistema em 3 passos rápidos</p>
+    </div>
+
+    <div class="wizard-progress">
+      <div class="progress-dot active" data-step="1"></div>
+      <div class="progress-dot" data-step="2"></div>
+      <div class="progress-dot" data-step="3"></div>
+    </div>
+
+    <!-- Etapa 1: Identidade -->
+    <div class="wizard-step active" data-step="1">
+      <div class="step-section">
+        <h2 class="step-section-title">Identidade do restaurante</h2>
+        <div class="form-group">
+          <label class="form-label" for="nome">Nome do restaurante</label>
+          <input type="text" id="nome" class="form-input" placeholder="Panela da Roça" value="Panela da Roça">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="endereco">Endereço</label>
+          <input type="text" id="endereco" class="form-input" placeholder="Rua, número, bairro, cidade">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Logo (opcional)</label>
+          <label for="logoInput" class="logo-upload">
+            <input type="file" id="logoInput" accept="image/*">
+            <svg class="logo-upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <path d="M21 15l-5-5L5 21"/>
+            </svg>
+            <span class="logo-upload-text">Clique para enviar o logo</span>
+            <div class="logo-preview" id="logoPreview">
+              <img src="" alt="Preview do logo">
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Etapa 2: Contas e saldo inicial -->
+    <div class="wizard-step" data-step="2">
+      <div class="step-section">
+        <h2 class="step-section-title">Contas e saldo inicial</h2>
+        <div id="contasList">
+          <div class="conta-item">
+            <div class="conta-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M2 9a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9z"/>
+                <path d="M22 9V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2"/>
+              </svg>
+            </div>
+            <div class="conta-info">
+              <div class="conta-nome">Caixa físico</div>
+              <div class="conta-tipo">Dinheiro</div>
+            </div>
+            <div class="conta-saldo">R$ 0,00</div>
+          </div>
+          <div class="conta-item">
+            <div class="conta-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v12M6 12h12"/>
+              </svg>
+            </div>
+            <div class="conta-info">
+              <div class="conta-nome">Pix Nubank</div>
+              <div class="conta-tipo">Pix</div>
+            </div>
+            <div class="conta-saldo">R$ 0,00</div>
+          </div>
+          <div class="conta-item">
+            <div class="conta-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+            </div>
+            <div class="conta-info">
+              <div class="conta-nome">Conta PJ</div>
+              <div class="conta-tipo">Banco</div>
+            </div>
+            <div class="conta-saldo">R$ 0,00</div>
+          </div>
+        </div>
+        <button class="btn-add" id="btnAddConta">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Adicionar conta
+        </button>
+      </div>
+    </div>
+
+    <!-- Etapa 3: Categorias de despesa -->
+    <div class="wizard-step" data-step="3">
+      <div class="step-section">
+        <h2 class="step-section-title">Categorias de despesa fixa</h2>
+        <p style="font-size: 14px; color: var(--muted); margin-bottom: 16px; line-height: 1.5;">
+          Estas categorias vêm pré-selecionadas. Você pode desmarcar as que não usar ou adicionar novas depois.
+        </p>
+        <div class="categoria-list">
+          <div class="categoria-item">
+            <input type="checkbox" class="categoria-check" checked>
+            <span class="categoria-nome">Salários</span>
+            <span class="categoria-grupo">Fixa</span>
+          </div>
+          <div class="categoria-item">
+            <input type="checkbox" class="categoria-check" checked>
+            <span class="categoria-nome">Gás</span>
+            <span class="categoria-grupo">Insumos</span>
+          </div>
+          <div class="categoria-item">
+            <input type="checkbox" class="categoria-check" checked>
+            <span class="categoria-nome">Luz (Enel)</span>
+            <span class="categoria-grupo">Fixa</span>
+          </div>
+          <div class="categoria-item">
+            <input type="checkbox" class="categoria-check" checked>
+            <span class="categoria-nome">Água</span>
+            <span class="categoria-grupo">Fixa</span>
+          </div>
+          <div class="categoria-item">
+            <input type="checkbox" class="categoria-check" checked>
+            <span class="categoria-nome">Internet</span>
+            <span class="categoria-grupo">Fixa</span>
+          </div>
+          <div class="categoria-item">
+            <input type="checkbox" class="categoria-check" checked>
+            <span class="categoria-nome">Aluguel</span>
+            <span class="categoria-grupo">Fixa</span>
+          </div>
+          <div class="categoria-item">
+            <input type="checkbox" class="categoria-check" checked>
+            <span class="categoria-nome">Contador</span>
+            <span class="categoria-grupo">Fixa</span>
+          </div>
+          <div class="categoria-item">
+            <input type="checkbox" class="categoria-check" checked>
+            <span class="categoria-nome">Impostos</span>
+            <span class="categoria-grupo">Fixa</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wizard-actions">
+      <button class="btn btn-secondary" id="btnBack" style="display: none;">Voltar</button>
+      <button class="btn btn-primary" id="btnNext">Próximo</button>
+    </div>
+  </div>
+
+  <script>
+    let currentStep = 1;
+    const totalSteps = 3;
+
+    const btnBack = document.getElementById('btnBack');
+    const btnNext = document.getElementById('btnNext');
+
+    function updateUI() {
+      document.querySelectorAll('.wizard-step').forEach(step => {
+        step.classList.toggle('active', step.dataset.step == currentStep);
+      });
+
+      document.querySelectorAll('.progress-dot').forEach(dot => {
+        dot.classList.toggle('active', dot.dataset.step <= currentStep);
+      });
+
+      btnBack.style.display = currentStep === 1 ? 'none' : 'block';
+      btnNext.textContent = currentStep === totalSteps ? 'Finalizar' : 'Próximo';
+    }
+
+    btnBack.addEventListener('click', () => {
+      if (currentStep > 1) {
+        currentStep--;
+        updateUI();
+      }
+    });
+
+    btnNext.addEventListener('click', () => {
+      if (currentStep < totalSteps) {
+        currentStep++;
+        updateUI();
+      } else {
+        // Mock: salvar configuração e redirecionar para dashboard
+        alert('Configuração concluída! Redirecionando para o Dashboard…');
+        window.location.href = 'dashboard.html';
+      }
+    });
+
+    // Upload de logo com preview
+    const logoInput = document.getElementById('logoInput');
+    const logoPreview = document.getElementById('logoPreview');
+
+    logoInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          logoPreview.querySelector('img').src = ev.target.result;
+          logoPreview.classList.add('visible');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Mock: adicionar conta
+    document.getElementById('btnAddConta').addEventListener('click', () => {
+      alert('Modal de adicionar conta será implementado com backend real.');
+    });
+
+    // Mock: editar saldo inicial ao clicar em uma conta
+    document.querySelectorAll('.conta-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const nomeConta = item.querySelector('.conta-nome').textContent;
+        const novoSaldo = prompt(`Defina o saldo inicial para ${nomeConta}:`, '0,00');
+        if (novoSaldo !== null) {
+          item.querySelector('.conta-saldo').textContent = `R$ ${novoSaldo}`;
+        }
+      });
+    });
+  </script>
+  <nav class="tab-bar">
+    <a href="/dashboard" class="tab-item"><div class="tab-icon">🏠</div><span>Dashboard</span></a>
+    <a href="/fechamento" class="tab-item"><div class="tab-icon">📊</div><span>Fechamento</span></a>
+    <a href="/churrasco" class="tab-item"><div class="tab-icon">🥩</div><span>Churrasco</span></a>
+    <a href="/lancamentos" class="tab-item"><div class="tab-icon">📋</div><span>Lan00e7amentos</span></a>
+    <a href="/contas-a-pagar" class="tab-item"><div class="tab-icon">📅</div><span>A Pagar</span></a>
+  </nav>
+</body>
+</html>

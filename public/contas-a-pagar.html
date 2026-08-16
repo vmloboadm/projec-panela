@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contas a Pagar — Panela da Roça</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;510;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      oklch(15% 0.02 40);
+      --surface: oklch(22% 0.025 40);
+      --fg:      oklch(95% 0.01 60);
+      --muted:   oklch(65% 0.02 50);
+      --border:  oklch(35% 0.03 45);
+      --accent:  oklch(62% 0.14 45);
+      --red-tijolo: oklch(48% 0.16 28);
+      --verde-pago: oklch(55% 0.10 140);
+      --vermelho-atrasado: oklch(48% 0.16 28);
+
+      --font-display: 'Rye', 'Alfa Slab One', Georgia, serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-small {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo-small img {
+      height: 32px;
+      width: auto;
+    }
+
+    .user-menu {
+      width: 36px;
+      height: 36px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .main-content {
+      padding: 20px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 20px;
+    }
+
+    .filters-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      flex: 1;
+      height: 40px;
+      padding: 0 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 510;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+    }
+
+    .contas-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .conta-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .conta-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--accent);
+    }
+
+    .conta-card.atrasado::before {
+      background: var(--vermelho-atrasado);
+    }
+
+    .conta-card.pago::before {
+      background: var(--verde-pago);
+    }
+
+    .conta-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .conta-desc {
+      font-size: 15px;
+      font-weight: 510;
+      color: var(--fg);
+      line-height: 1.3;
+    }
+
+    .conta-valor {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--fg);
+      white-space: nowrap;
+    }
+
+    .conta-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .conta-vencimento {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .conta-categoria {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 3px 8px;
+      background: var(--bg);
+      border-radius: 4px;
+    }
+
+    .status-badge {
+      font-size: 10px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .status-badge.pendente {
+      background: oklch(62% 0.14 45 / 0.12);
+      color: var(--accent);
+    }
+
+    .status-badge.atrasado {
+      background: oklch(48% 0.16 28 / 0.12);
+      color: var(--vermelho-atrasado);
+    }
+
+    .status-badge.pago {
+      background: oklch(55% 0.10 140 / 0.12);
+      color: var(--verde-pago);
+    }
+
+    .conta-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      height: 32px;
+      padding: 0 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 510;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .action-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .action-btn.pagar {
+      background: var(--verde-pago);
+      border-color: var(--verde-pago);
+      color: var(--bg);
+    }
+
+    .action-btn.pagar:hover {
+      background: oklch(58% 0.10 140);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-state-text {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: oklch(15% 0.02 40 / 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 20px;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 420px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 510;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.01em;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 48px;
+      padding: 0 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: 15px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px oklch(62% 0.14 45 / 0.15);
+    }
+
+    .form-select {
+      width: 100%;
+      height: 48px;
+      padding: 0 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: 15px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px oklch(62% 0.14 45 / 0.15);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      height: 48px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 510;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+    }
+
+    .btn-primary {
+      flex: 1;
+      height: 48px;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px oklch(62% 0.14 45 / 0.3);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 48px;
+      padding: 0 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .checkbox-group:hover {
+      border-color: var(--accent);
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .checkbox-group label {
+      font-size: 15px;
+      color: var(--fg);
+      cursor: pointer;
+    }
+
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 0;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 510;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+
+    .tab-item.active {
+      color: var(--accent);
+    }
+
+    .tab-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .fab {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      background: var(--accent);
+      border-radius: 16px;
+      border: none;
+      color: var(--bg);
+      font-size: 28px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 20px oklch(62% 0.14 45 / 0.35);
+      z-index: 150;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s;
+    }
+
+    .fab:hover {
+      transform: translateY(-2px);
+    }
+
+    @media (min-width: 768px) {
+      .main-content {
+        max-width: 960px;
+        padding: 32px;
+      }
+
+      .contas-list {
+        gap: 16px;
+      }
+    }
+  </style>
+</head>
+<body data-od-id="contas-a-pagar-page">
+  <header class="header" data-od-id="main-header">
+    <div class="logo-small">
+      <img src="logo-panela-png.png" alt="Panela da Roça">
+    </div>
+    <div class="user-menu" data-od-id="user-menu">
+      PR
+    </div>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title" data-od-id="page-title">Contas a Pagar</h1>
+
+    <div class="filters-bar" data-od-id="filters">
+      <div class="filter-row">
+        <button class="filter-btn active" data-filter="todos">Todas</button>
+        <button class="filter-btn" data-filter="pendente">Pendentes</button>
+        <button class="filter-btn" data-filter="pago">Pagas</button>
+      </div>
+    </div>
+
+    <div class="contas-list" id="contas-a-pagar-list">
+    </div>
+
+    <div class="empty-state" id="empty-state" style="display:none;">
+      <div class="empty-state-icon">📅</div>
+      <div class="empty-state-text">Nenhuma conta a pagar encontrada</div>
+    </div>
+  </main>
+
+
+  <div class="modal-overlay" id="modal-pagar">
+    <div class="modal-card">
+      <h2 class="modal-title">Marcar como pago</h2>
+      <form id="pagarForm">
+        <div class="form-group">
+          <label class="form-label">Valor</label>
+          <input type="text" class="form-input" id="modal-valor" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Conta de origem</label>
+          <select class="form-select" id="modal-conta" required>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="modal-cancelar-pagar">Cancelar</button>
+          <button type="submit" class="btn-primary">Confirmar pagamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-criar">
+    <div class="modal-card">
+      <h2 class="modal-title">Nova conta a pagar</h2>
+      <form id="criarForm">
+        <div class="form-group">
+          <label class="form-label">Descrição</label>
+          <input type="text" class="form-input" id="criar-descricao" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Valor (opcional)</label>
+          <input type="text" class="form-input" id="criar-valor">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dia de vencimento (1-31)</label>
+          <input type="number" class="form-input" id="criar-dia" min="1" max="31" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Categoria</label>
+          <select class="form-select" id="criar-categoria">
+            <option value="">Sem categoria</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <div class="checkbox-group">
+            <input type="checkbox" id="criar-recorrente" checked>
+            <label for="criar-recorrente">Recorrente</label>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="modal-cancelar-criar">Cancelar</button>
+          <button type="submit" class="btn-primary">Criar conta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <button class="fab" id="fab-add">+</button>
+
+  <script src="auth.js"></script>
+  <script>
+    if (!requireAuth()) throw new Error('not auth');
+
+    let contas = [];
+    let categorias = [];
+    let currentFilter = 'todos';
+    let currentPagarId = null;
+
+    async function loadContas() {
+      contas = await apiGet('/api/contas') || [];
+    }
+
+    async function loadCategorias() {
+      categorias = await apiGet('/api/categorias') || [];
+      const sel = document.getElementById('criar-categoria');
+      sel.innerHTML = '<option value="">Sem categoria</option>';
+      categorias.forEach(c => {
+        sel.innerHTML += '<option value="' + c.id + '">' + c.nome + '</option>';
+      });
+    }
+
+    function getVencimentoLabel(item) {
+      if (item.status === 'pago') {
+        return item.data_pagamento ? 'Pago em ' + formatDate(item.data_pagamento) : 'Pago';
+      }
+      if (!item.data_vencimento) return 'Vence dia ' + item.dia_vencimento;
+      const venc = new Date(item.data_vencimento + 'T00:00:00');
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      const dias = Math.ceil((venc - hoje) / 86400000);
+      if (dias < 0) return 'Venceu há ' + Math.abs(dias) + ' dia(s) • ' + formatDate(item.data_vencimento);
+      if (dias === 0) return 'Vence hoje';
+      if (dias === 1) return 'Vence amanhã';
+      return 'Vence em ' + dias + ' dias • ' + formatDate(item.data_vencimento);
+    }
+
+    function getStatusClass(item) {
+      if (item.status === 'pago') return 'pago';
+      if (!item.data_vencimento) return 'pendente';
+      const venc = new Date(item.data_vencimento + 'T00:00:00');
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      return venc < hoje ? 'atrasado' : 'pendente';
+    }
+
+    function getStatusLabel(statusClass) {
+      if (statusClass === 'pago') return 'Pago';
+      if (statusClass === 'atrasado') return 'Atrasado';
+      return 'Pendente';
+    }
+
+    function getCategoriaNome(categoriaId) {
+      if (!categoriaId) return '';
+      const cat = categorias.find(c => c.id === categoriaId);
+      return cat ? cat.nome : '';
+    }
+
+    function renderContas(items) {
+      const list = document.getElementById('contas-a-pagar-list');
+      const empty = document.getElementById('empty-state');
+
+      if (!items || items.length === 0) {
+        list.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+
+      empty.style.display = 'none';
+      list.innerHTML = items.map(item => {
+        const statusClass = getStatusClass(item);
+        const cardClass = statusClass === 'pago' ? ' pago' : statusClass === 'atrasado' ? ' atrasado' : '';
+        const catNome = getCategoriaNome(item.categoria_id);
+        const isPaid = item.status === 'pago';
+
+        let actionsHtml = '';
+        if (!isPaid) {
+          actionsHtml = '<div class="conta-actions">' +
+            '<button class="action-btn pagar" onclick="openPagar(\'' + item.id + '\', ' + (item.valor || 0) + ')">Pagar</button>' +
+            '<button class="action-btn delete" onclick="excluirConta(\'' + item.id + '\', \'' + (item.descricao || '').replace(/'/g, "\\'") + '\')">Excluir</button>' +
+          '</div>';
+        }
+
+        return '<div class="conta-card' + cardClass + '" data-status="' + statusClass + '">' +
+          '<div class="conta-header">' +
+            '<div class="conta-desc">' + (item.descricao || 'Sem descrição') + '</div>' +
+            '<div class="conta-valor">' + (item.valor ? formatCurrency(item.valor) : '—') + '</div>' +
+          '</div>' +
+          '<div class="conta-meta">' +
+            '<span class="conta-vencimento">' + getVencimentoLabel(item) + '</span>' +
+            '<span class="status-badge ' + statusClass + '">' + getStatusLabel(statusClass) + '</span>' +
+            (catNome ? '<span class="conta-categoria">' + catNome + '</span>' : '') +
+            (item.recorrente ? '<span class="conta-categoria">Recorrente</span>' : '') +
+          '</div>' +
+          actionsHtml +
+        '</div>';
+      }).join('');
+    }
+
+    async function loadBills() {
+      let url = '/api/contas-a-pagar';
+      const params = [];
+      if (currentFilter !== 'todos') params.push('status=' + currentFilter);
+      if (params.length) url += '?' + params.join('&');
+
+      const items = await apiGet(url) || [];
+      renderContas(items);
+    }
+
+    function openPagar(id, valor) {
+      currentPagarId = id;
+      const modal = document.getElementById('modal-pagar');
+      document.getElementById('modal-valor').value = valor ? formatCurrency(valor) : '';
+      const sel = document.getElementById('modal-conta');
+      sel.innerHTML = contas.map(c =>
+        '<option value="' + c.id + '">' + c.nome + '</option>'
+      ).join('');
+      modal.classList.add('visible');
+    }
+
+    async function excluirConta(id, desc) {
+      if (!confirm('Deseja excluir "' + desc + '"?')) return;
+      await apiDelete('/api/contas-a-pagar/' + id);
+      loadBills();
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentFilter = this.dataset.filter;
+        loadBills();
+      });
+    });
+
+    document.getElementById('modal-cancelar-pagar').addEventListener('click', function() {
+      document.getElementById('modal-pagar').classList.remove('visible');
+    });
+
+    document.getElementById('modal-pagar').addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('visible');
+    });
+
+    document.getElementById('pagarForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (!currentPagarId) return;
+
+      const contaId = document.getElementById('modal-conta').value;
+      await apiPost('/api/contas-a-pagar/' + currentPagarId + '/pagar', {
+        conta_id: contaId
+      });
+
+      document.getElementById('modal-pagar').classList.remove('visible');
+      currentPagarId = null;
+      loadBills();
+    });
+
+    document.getElementById('fab-add').addEventListener('click', function() {
+      document.getElementById('criar-descricao').value = '';
+      document.getElementById('criar-valor').value = '';
+      document.getElementById('criar-dia').value = new Date().getDate();
+      document.getElementById('criar-categoria').value = '';
+      document.getElementById('criar-recorrente').checked = true;
+      document.getElementById('modal-criar').classList.add('visible');
+    });
+
+    document.getElementById('modal-cancelar-criar').addEventListener('click', function() {
+      document.getElementById('modal-criar').classList.remove('visible');
+    });
+
+    document.getElementById('modal-criar').addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('visible');
+    });
+
+    document.getElementById('criarForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const descricao = document.getElementById('criar-descricao').value.trim();
+      const valorText = document.getElementById('criar-valor').value;
+      const dia = parseInt(document.getElementById('criar-dia').value);
+      const categoriaId = document.getElementById('criar-categoria').value || null;
+      const recorrente = document.getElementById('criar-recorrente').checked;
+
+      if (!descricao || !dia) return;
+
+      let valor = null;
+      if (valorText) {
+        valor = parseFloat(valorText.replace(/[^\d,]/g, '').replace(',', '.'));
+      }
+
+      await apiPost('/api/contas-a-pagar', {
+        descricao,
+        valor,
+        dia_vencimento: dia,
+        categoria_id: categoriaId,
+        recorrente
+      });
+
+      document.getElementById('modal-criar').classList.remove('visible');
+      loadBills();
+    });
+
+    document.getElementById('criar-valor').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length === 0) { e.target.value = ''; return; }
+      const number = parseInt(value) / 100;
+      e.target.value = 'R$ ' + number.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    });
+
+    document.querySelector('.user-menu').onclick = logout;
+
+    Promise.all([loadContas(), loadCategorias()]).then(loadBills);
+  </script>
+  <nav class="tab-bar">
+    <a href="/dashboard" class="tab-item"><div class="tab-icon">🏠</div><span>Dashboard</span></a>
+    <a href="/fechamento" class="tab-item"><div class="tab-icon">📊</div><span>Fechamento</span></a>
+    <a href="/churrasco" class="tab-item"><div class="tab-icon">🥩</div><span>Churrasco</span></a>
+    <a href="/lancamentos" class="tab-item"><div class="tab-icon">📋</div><span>Lançamentos</span></a>
+    <a href="/contas-a-pagar" class="tab-item"><div class="tab-icon">📅</div><span>A Pagar</span></a>
+  </nav>
+</body>
+</html>

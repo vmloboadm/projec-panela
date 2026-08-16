@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lançamentos — Panela da Roça</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;510;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <script src="/js/core.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/ia.js"></script>
+  <style>
+    :root {
+      --bg: oklch(15% 0.02 40); --surface: oklch(22% 0.025 40); --fg: oklch(95% 0.01 60);
+      --muted: oklch(65% 0.02 50); --border: oklch(35% 0.03 45); --accent: oklch(62% 0.14 45);
+      --red-tijolo: oklch(48% 0.16 28); --verde-pago: oklch(55% 0.10 140);
+      --font-display: 'Rye', Georgia, serif; --font-body: 'Inter', system-ui, sans-serif; --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:var(--font-body); background:var(--bg); color:var(--fg); min-height:100vh; padding-bottom:90px; }
+    .header { background:var(--surface); border-bottom:1px solid var(--border); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+    .header-title { font-size:20px; font-weight:600; }
+    .user-menu { width:36px; height:36px; background:var(--bg); border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); font-size:13px; font-weight:600; }
+    .main { padding:16px; max-width:480px; margin:0 auto; }
+
+    .filtros { display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; }
+    .filtro-btn { flex:1; min-width:72px; height:38px; background:var(--surface); border:1px solid var(--border); border-radius:8px; color:var(--fg); font-family:var(--font-body); font-size:13px; font-weight:510; cursor:pointer; transition:all .2s; }
+    .filtro-btn.active { background:var(--accent); border-color:var(--accent); color:var(--bg); }
+
+    .lancamentos-list { display:flex; flex-direction:column; gap:10px; }
+    .l-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; display:flex; gap:12px; }
+    .l-icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .l-icon.receita { background:oklch(55% 0.10 140 / 0.15); }
+    .l-icon.despesa { background:oklch(48% 0.16 28 / 0.15); }
+    .l-main { flex:1; min-width:0; }
+    .l-header { display:flex; justify-content:space-between; gap:8px; margin-bottom:4px; }
+    .l-desc { font-size:14px; font-weight:510; color:var(--fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .l-valor { font-family:var(--font-mono); font-size:15px; font-weight:500; white-space:nowrap; }
+    .l-valor.receita { color:var(--verde-pago); }
+    .l-valor.despesa { color:var(--red-tijolo); }
+    .l-meta { display:flex; gap:6px; flex-wrap:wrap; font-size:11px; color:var(--muted); align-items:center; }
+    .l-cat { padding:2px 6px; background:var(--bg); border-radius:4px; }
+    .l-actions { margin-top:8px; display:flex; gap:8px; }
+    .l-btn { height:28px; padding:0 10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--muted); font-size:11px; font-weight:510; cursor:pointer; }
+    .l-btn.danger:hover { border-color:var(--red-tijolo); color:var(--red-tijolo); }
+
+    .fab { position:fixed; bottom:80px; right:20px; width:52px; height:52px; background:var(--accent); border:none; border-radius:14px; box-shadow:0 4px 16px oklch(62% 0.14 45 / 0.4); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--bg); z-index:90; }
+
+    .saldo-header { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:16px; text-align:center; }
+    .saldo-label { font-size:11px; color:var(--muted); text-transform:uppercase; }
+    .saldo-valor { font-family:var(--font-mono); font-size:28px; font-weight:500; margin-top:4px; }
+    .saldo-valor.positivo { color:var(--verde-pago); }
+    .saldo-valor.negativo { color:var(--red-tijolo); }
+
+    @media (min-width:768px) { .main { max-width:600px; } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <span class="header-title">Lançamentos</span>
+    <div class="user-menu" onclick="logout()" id="userMenu">PR</div>
+  </header>
+
+  <main class="main">
+    <div class="saldo-header" id="saldoHeader" style="display:none">
+      <div class="saldo-label">Saldo do Mês</div>
+      <div class="saldo-valor" id="saldoMes">R$ 0,00</div>
+    </div>
+
+    <div class="filtros" id="filtros">
+      <button class="filtro-btn active" data-filtro="hoje">Hoje</button>
+      <button class="filtro-btn" data-filtro="semana">Semana</button>
+      <button class="filtro-btn" data-filtro="mes">Mês</button>
+      <button class="filtro-btn" data-filtro="tudo">Tudo</button>
+    </div>
+
+    <div class="lancamentos-list" id="lancamentosList"></div>
+  </main>
+
+  <button class="fab" onclick="window.location.href='/novo-lancamento'">+</button>
+
+  <script>
+    if (!requireAuth()) throw new Error('not auth');
+
+    let filtroAtual = 'hoje';
+
+    function getFiltroData(filtro) {
+      const hoje = new Date();
+      const y = hoje.getFullYear(), m = hoje.getMonth();
+      if (filtro === 'hoje') return { data_inicio: todayStr(), data_fim: todayStr() };
+      if (filtro === 'semana') {
+        const inicio = new Date(hoje);
+        inicio.setDate(hoje.getDate() - hoje.getDay() + (hoje.getDay() === 0 ? -6 : 1));
+        return { data_inicio: inicio.toISOString().slice(0,10), data_fim: todayStr() };
+      }
+      if (filtro === 'mes') return { data_inicio: new Date(y,m,1).toISOString().slice(0,10), data_fim: new Date(y,m+1,0).toISOString().slice(0,10) };
+      return {};
+    }
+
+    async function load() {
+      const list = document.getElementById('lancamentosList');
+      showLoading(list);
+
+      const params = getFiltroData(filtroAtual);
+      let url = '/api/lancamentos?limit=100';
+      if (params.data_inicio) url += '&data_inicio=' + params.data_inicio;
+      if (params.data_fim) url += '&data_fim=' + params.data_fim;
+
+      const res = await apiGet(url);
+
+      if (!res || !res.data) {
+        showError(list, 'Erro ao carregar lançamentos');
+        return;
+      }
+
+      // Saldo do mês
+      const mesParams = getFiltroData('mes');
+      const mesRes = await apiGet('/api/lancamentos/resumo?mes=' + new Date().toISOString().slice(0,7));
+      if (mesRes) {
+        const saldo = (mesRes.total_receitas || 0) - (mesRes.total_despesas || 0);
+        document.getElementById('saldoHeader').style.display = 'block';
+        const el = document.getElementById('saldoMes');
+        el.textContent = fmtCurrency(Math.abs(saldo));
+        el.className = 'saldo-valor ' + (saldo >= 0 ? 'positivo' : 'negativo');
+      }
+
+      if (res.data.length === 0) {
+        showEmpty(list, 'Nenhum lançamento neste período', '<a href="/novo-lancamento" style="color:var(--accent);text-decoration:none;font-weight:600">+ Novo Lançamento</a>');
+        return;
+      }
+
+      list.innerHTML = res.data.map(l => {
+        const icon = l.tipo === 'receita' ? '💰' : '🔥';
+        const sinal = l.tipo === 'receita' ? '+' : '-';
+        return '<div class="l-card">' +
+          '<div class="l-icon ' + l.tipo + '">' + icon + '</div>' +
+          '<div class="l-main">' +
+            '<div class="l-header">' +
+              '<div class="l-desc">' + (l.descricao || l.categoria_nome || 'Sem descrição') + '</div>' +
+              '<div class="l-valor ' + l.tipo + '">' + sinal + fmtCurrency(l.valor) + '</div>' +
+            '</div>' +
+            '<div class="l-meta">' +
+              '<span>' + fmtDate(l.data) + '</span>' +
+              (l.categoria_nome ? '<span class="l-cat">' + l.categoria_nome + '</span>' : '') +
+              '<span style="font-size:10px;opacity:0.6">' + (l.origem || 'manual') + '</span>' +
+            '</div>' +
+            '<div class="l-actions">' +
+              '<button class="l-btn danger" onclick="excluir(\'' + l.id + '\',\'' + (l.descricao || '').replace(/'/g, "\\'") + '\',\'' + l.valor + '\')">🗑️</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    async function excluir(id, desc, valor) {
+      if (!confirm('Excluir "' + decodeURIComponent(desc) + '" no valor de ' + fmtCurrency(parseFloat(valor||0)) + '?')) return;
+      await apiDelete('/api/lancamentos/' + id);
+      load();
+    }
+
+    document.querySelectorAll('.filtro-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        filtroAtual = this.dataset.filtro;
+        load();
+      });
+    });
+
+    load();
+    injectTabBar();
+  </script>
+</body>
+</html>

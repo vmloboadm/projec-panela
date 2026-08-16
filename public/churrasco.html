@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Churrasco — Panela da Roça</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;510;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: oklch(15% 0.02 40); --surface: oklch(22% 0.025 40); --fg: oklch(95% 0.01 60);
+      --muted: oklch(65% 0.02 50); --border: oklch(35% 0.03 45); --accent: oklch(62% 0.14 45);
+      --verde: oklch(55% 0.10 140); --vermelho: oklch(48% 0.16 28);
+      --font-body: 'Inter', system-ui, sans-serif; --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--fg); min-height: 100vh; padding-bottom: 80px; }
+    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+    .page-title { font-size: 18px; font-weight: 600; }
+    .main { padding: 16px; max-width: 480px; margin: 0 auto; }
+    .section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    .section-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+    .corte-card { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg); border-radius: 8px; margin-bottom: 8px; }
+    .corte-nome { font-size: 14px; font-weight: 510; }
+    .corte-info { font-size: 12px; color: var(--muted); }
+    .corte-valores { text-align: right; font-family: var(--font-mono); font-size: 13px; }
+    .form-group { margin-bottom: 12px; }
+    .form-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+    .form-input, .form-select { width: 100%; height: 44px; padding: 0 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--fg); font-family: var(--font-body); font-size: 14px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .btn-primary { width: 100%; height: 44px; background: var(--accent); color: var(--bg); border: none; border-radius: 10px; font-family: var(--font-body); font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 8px; }
+    .btn-secondary { width: 100%; height: 44px; background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 10px; font-family: var(--font-body); font-size: 14px; font-weight: 600; cursor: pointer; }
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 0 max(8px, env(safe-area-inset-bottom)); z-index: 100; }
+    .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 0; text-decoration: none; color: var(--muted); font-size: 10px; font-weight: 510; }
+    .tab-item.active { color: var(--accent); }
+    .tab-icon { font-size: 20px; }
+  </style>
+</head>
+<body>
+  <header class="header"><span class="page-title">🥩 Churrasco</span></header>
+  <main class="main">
+    <div id="estoqueSection" class="section">
+      <div class="section-title">Estoque de Carnes</div>
+      <div id="carnesList"></div>
+      <button class="btn-primary" onclick="mostrarFormCarne()">+ Adicionar Corte</button>
+    </div>
+
+    <div id="formCarne" class="section" style="display:none;">
+      <div class="section-title" id="formCarneTitulo">Novo Corte</div>
+      <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="cNome" placeholder="Picanha, Alcatra..."></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="cTipo"><option>Picanha</option><option>Alcatra</option><option>Maminha</option><option>Costela</option><option>Frango</option><option>Linguiça</option><option>Outro</option></select></div>
+        <div class="form-group"><label class="form-label">KG</label><input class="form-input" id="cKg" inputmode="decimal"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Preço KG (Compra)</label><input class="form-input" id="cPrecoCompra" inputmode="decimal"></div>
+        <div class="form-group"><label class="form-label">Preço KG (Venda)</label><input class="form-input" id="cPrecoVenda" inputmode="decimal"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Fornecedor</label><input class="form-input" id="cFornecedor"></div>
+      <button class="btn-primary" onclick="salvarCarne()">Salvar</button>
+      <button class="btn-secondary" onclick="cancelarFormCarne()">Cancelar</button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Registrar Consumo</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Corte</label><select class="form-select" id="conCorteId"></select></div>
+        <div class="form-group"><label class="form-label">KG Consumidos</label><input class="form-input" id="conKg" inputmode="decimal"></div>
+      </div>
+      <button class="btn-primary" onclick="registrarConsumo()">Registrar Consumo</button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Últimos Consumos</div>
+      <div id="consumosList"></div>
+    </div>
+  </main>
+  <script src="auth.js"></script>
+  <script>
+    if (!requireAuth()) throw new Error('not auth')
+
+    async function loadCarnes() {
+      const carnes = await apiGet('/api/churrasco/carnes') || []
+      const el = document.getElementById('carnesList')
+      el.innerHTML = carnes.map(c =>
+        '<div class="corte-card">' +
+          '<div><div class="corte-nome">' + c.nome + '</div><div class="corte-info">' + c.tipo_corte + ' • ' + c.fornecedor + ' • ' + c.quantidade_kg + 'kg</div></div>' +
+          '<div class="corte-valores">' +
+            'Compra: ' + formatCurrency(c.preco_kg_compra) + '/kg<br>' +
+            'Venda: ' + formatCurrency(c.preco_kg_venda) + '/kg</div>' +
+        '</div>'
+      ).join('')
+
+      const sel = document.getElementById('conCorteId')
+      sel.innerHTML = '<option value="">Selecione...</option>'
+      carnes.forEach(c => {
+        sel.innerHTML += '<option value="' + c.id + '">' + c.nome + ' (' + c.quantidade_kg + 'kg)</option>'
+      })
+    }
+
+    async function loadConsumos() {
+      const consumos = await apiGet('/api/churrasco/consumo') || []
+      const el = document.getElementById('consumosList')
+      el.innerHTML = consumos.map(c =>
+        '<div class="corte-card"><div><div class="corte-nome">' + (c.corte_id || 'Corte removido') + '</div><div class="corte-info">' + c.data + '</div></div><div class="corte-valores">' + c.quantidade_kg + 'kg • ' + formatCurrency(c.valor_total) + '</div></div>'
+      ).join('')
+    }
+
+    function mostrarFormCarne() { document.getElementById('formCarne').style.display = 'block' }
+    function cancelarFormCarne() { document.getElementById('formCarne').style.display = 'none' }
+
+    async function salvarCarne() {
+      const body = {
+        nome: document.getElementById('cNome').value,
+        tipo_corte: document.getElementById('cTipo').value,
+        quantidade_kg: document.getElementById('cKg').value,
+        preco_kg_compra: document.getElementById('cPrecoCompra').value.replace(',','.'),
+        preco_kg_venda: document.getElementById('cPrecoVenda').value.replace(',','.'),
+        fornecedor: document.getElementById('cFornecedor').value,
+      }
+      await apiPost('/api/churrasco/carnes', body)
+      cancelarFormCarne()
+      loadCarnes()
+    }
+
+    async function registrarConsumo() {
+      const body = {
+        corte_id: document.getElementById('conCorteId').value,
+        quantidade_kg: document.getElementById('conKg').value.replace(',','.'),
+        data: new Date().toISOString().slice(0,10)
+      }
+      await apiPost('/api/churrasco/consumo', body)
+      document.getElementById('conKg').value = ''
+      loadConsumos()
+      loadCarnes()
+    }
+
+    loadCarnes()
+    loadConsumos()
+  </script>
+  <nav class="tab-bar">
+    <a href="/dashboard" class="tab-item"><div class="tab-icon">🏠</div><span>Dashboard</span></a>
+    <a href="/fechamento" class="tab-item"><div class="tab-icon">📊</div><span>Fechamento</span></a>
+    <a href="/churrasco" class="tab-item"><div class="tab-icon">🥩</div><span>Churrasco</span></a>
+    <a href="/lancamentos" class="tab-item"><div class="tab-icon">📋</div><span>Lançamentos</span></a>
+    <a href="/contas-a-pagar" class="tab-item"><div class="tab-icon">📅</div><span>A Pagar</span></a>
+  </nav>
+</body>
+</html>

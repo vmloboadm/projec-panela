@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panela da Roça — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;510;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      oklch(15% 0.02 40);
+      --surface: oklch(22% 0.025 40);
+      --fg:      oklch(95% 0.01 60);
+      --muted:   oklch(65% 0.02 50);
+      --border:  oklch(35% 0.03 45);
+      --accent:  oklch(62% 0.14 45);
+      --red-tijolo: oklch(48% 0.16 28);
+      --verde-pago: oklch(55% 0.10 140);
+      --vermelho-atrasado: oklch(48% 0.16 28);
+
+      --font-display: 'Rye', 'Alfa Slab One', Georgia, serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: 
+        radial-gradient(circle at 20% 80%, var(--accent) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, var(--red-tijolo) 0%, transparent 50%);
+      opacity: 0.08;
+      pointer-events: none;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 40px 28px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo-placeholder {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .logo-placeholder img {
+      width: 100%;
+      max-width: 240px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .login-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 510;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.01em;
+    }
+
+    .form-group input {
+      width: 100%;
+      height: 48px;
+      padding: 0 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: 15px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px oklch(62% 0.14 45 / 0.15);
+    }
+
+    .form-group input::placeholder {
+      color: oklch(50% 0.02 50);
+    }
+
+    .btn-primary {
+      width: 100%;
+      height: 52px;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      margin-top: 8px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px oklch(62% 0.14 45 / 0.3);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .forgot-password {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .forgot-password a {
+      color: var(--accent);
+      font-size: 14px;
+      text-decoration: none;
+      font-weight: 510;
+    }
+
+    .forgot-password a:hover {
+      text-decoration: underline;
+    }
+
+    .version-badge {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 510;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 32px 24px;
+      }
+
+      .logo-placeholder h1 {
+        font-size: 32px;
+      }
+
+      .login-title {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body data-od-id="login-page">
+  <div class="login-container" data-od-id="login-card">
+    <div class="logo-placeholder" data-od-id="logo-area">
+      <img src="logo-panela-png.png" alt="Panela da Roça — Restaurante e Churrascaria desde 1997">
+    </div>
+
+    <h2 class="login-title" data-od-id="login-heading">Acesse sua conta</h2>
+
+    <form id="loginForm" data-od-id="login-form">
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          placeholder="seu@email.com"
+          required
+          autocomplete="username"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          placeholder="••••••••"
+          required
+          autocomplete="current-password"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="pin">PIN de acesso rápido (opcional)</label>
+        <input 
+          type="password" 
+          id="pin" 
+          name="pin" 
+          placeholder="4 a 6 dígitos"
+          maxlength="6"
+          inputmode="numeric"
+        >
+      </div>
+
+      <button type="submit" class="btn-primary" data-od-id="login-button">
+        Entrar
+      </button>
+    </form>
+
+    <div class="forgot-password">
+      <a href="#" data-od-id="forgot-link">Esqueci minha senha</a>
+    </div>
+  </div>
+
+  <div class="version-badge">v1.0.0</div>
+
+  <script src="auth.js"></script>
+  <script>
+    if (getToken()) window.location.href = '/dashboard';
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const btn = document.querySelector('.btn-primary');
+      const errEl = document.getElementById('login-error');
+
+      btn.textContent = 'Entrando...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          btn.textContent = 'Entrar';
+          btn.disabled = false;
+          if (!errEl) {
+            const el = document.createElement('div');
+            el.id = 'login-error';
+            el.style.cssText = 'color:var(--vermelho-atrasado);text-align:center;margin-top:12px;font-size:14px;';
+            el.textContent = data.error;
+            document.getElementById('loginForm').appendChild(el);
+          } else {
+            errEl.textContent = data.error;
+          }
+          return;
+        }
+
+        setAuth(data.access_token, data.user, data.refresh_token);
+        const pin = document.getElementById('pin').value.trim();
+        if (pin) {
+          localStorage.setItem('panela_pin', pin);
+          sessionStorage.setItem('panela_unlocked', '1');
+        } else {
+          localStorage.removeItem('panela_pin');
+        }
+        window.location.href = '/dashboard';
+      } catch (err) {
+        btn.textContent = 'Entrar';
+        btn.disabled = false;
+        alert('Erro de conexão com o servidor');
+      }
+    });
+  </script>
+</body>
+</html>

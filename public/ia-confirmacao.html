@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmação IA — Panela da Roça</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;510;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: oklch(15% 0.02 40);
+      --surface: oklch(22% 0.025 40);
+      --fg: oklch(95% 0.01 60);
+      --muted: oklch(65% 0.02 50);
+      --border: oklch(35% 0.03 45);
+      --accent: oklch(62% 0.14 45);
+      --verde: oklch(55% 0.10 140);
+      --vermelho: oklch(48% 0.16 28);
+      --font-body: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--fg); min-height: 100vh; padding-bottom: 80px; }
+    
+    .header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .btn-back { width: 36px; height: 36px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); }
+    .page-title { font-size: 16px; font-weight: 600; flex: 1; text-align: center; }
+    .user-menu { width: 36px; height: 36px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 600; }
+    
+    .main { padding: 16px; max-width: 480px; margin: 0 auto; }
+    
+    .pendencia-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; margin-bottom: 16px;
+    }
+    .pendencia-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+    }
+    .pendencia-tipo { font-weight: 600; text-transform: uppercase; font-size: 12px; }
+    .pendencia-tipo.receita { color: var(--verde); }
+    .pendencia-tipo.despesa { color: var(--vermelho); }
+    .pendencia-status { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+    .pendencia-status.aguardando { background: oklch(75% 0.12 85 / 0.2); color: var(--accent); }
+    .pendencia-status.confirmado { background: oklch(55% 0.10 140 / 0.2); color: var(--verde); }
+    .pendencia-status.rejeitado { background: oklch(48% 0.16 28 / 0.2); color: var(--vermelho); }
+    
+    .info-section { margin-bottom: 16px; }
+    .info-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .info-value { font-size: 14px; color: var(--fg); font-weight: 500; }
+    0; }
+    
+    .sugestao-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; margin-bottom: 16px;
+    }
+    .sugestao-label { font-size: 11px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+    .sugestao-detalhes { display: flex; flex-wrap: wrap; gap: 12px; }
+    .sugestao-item {
+      flex: 1; min-width: 80px;
+    }
+    .sugestao-label-item { font-size: 10px; color: var(--muted); }
+    .sugestao-value-item { font-family: var(--font-mono); font-size: 14px; font-weight: 500; }
+    .sugestao-value-receita { color: var(--verde); }
+    .sugestao-value-despesa { color: var(--vermelho); }
+    
+    .form-section {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; margin-bottom: 16px;
+    }
+    .form-group { margin-bottom: 12px; }
+    .form-group:last-child { margin-bottom: 0; }
+    .form-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    .form-input, .form-select {
+      width: 100%; height: 44px; padding: 0 12px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px; color: var(--fg);
+      font-family: var(--font-body); font-size: 14px;
+    }
+    .form-select { cursor: pointer; }
+    
+    .submit-btn {
+      width: 100%; height: 52px; border: none; border-radius: 12px;
+      font-family: var(--font-body); font-size: 16px; font-weight: 600; cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s; margin-top: 8px;
+    }
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn.confirmar { background: var(--verde); color: oklch(100% 0 0); }
+    .submit-btn.rejeitar { background: var(--vermelho); color: oklch(100% 0 0); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--surface); border-top: 1px solid var(--border);
+      display: flex; justify-content: space-around; padding: 8px 0 max(8px, env(safe-area-inset-bottom)); z-index: 100; }
+    .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 8px 0; text-decoration: none; color: var(--muted); font-size: 10px; font-weight: 510; }
+    .tab-item.active { color: var(--accent); }
+    .tab-icon { font-size: 20px; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a href="/lancamentos" class="btn-back">←</a>
+    <span class="page-title">Confirmação IA</span>
+    <div class="user-menu" id="userMenu">PR</div>
+  </header>
+
+  <main class="main">
+    <div id="pendenciaArea">
+      <div class="pendencia-card">
+        <div class="pendencia-header">
+          <div class="pendencia-tipo" id="pendenciaTipo">-</div>
+          <div class="pendencia-status" id="pendenciaStatus">-</div>
+        </div>
+        
+        <div class="info-section">
+          <div class="info-label">Descrição</div>
+          <div class="info-value" id="infoDescricao">-</div>
+        </div>
+        
+        <div class="info-section">
+          <div class="info-label">Data</div>
+          <div class="info-value" id="infoData">-</div>
+        </div>
+        
+        <div id="sugestaoArea" style="display:none;">
+          <div class="sugestao-card">
+            <div class="sugestao-label">Sugestão de Lançamento</div>
+            <div class="sugestao-detalhes" id="sugestaoDetalhes">
+              <div class="sugestao-item">
+                <div class="sugestao-label-item">Tipo</div>
+                <div class="sugestao-value-item" id="sugestaoTipo">-</div>
+              </div>
+              <div class="sugestao-item">
+                <div class="sugestao-label-item">Valor</div>
+                <div class="sugestao-value-item" id="sugestaoValor">-</div>
+              </div>
+              </div>
+            </div>
+            
+            <div class="form-section">
+              <div class="form-group">
+                <div class="form-label">Confirmar dados</div>
+                <input type="text" class="form-input" id="confirmDescricao" placeholder="Descrição (opcional)">
+              </div>
+              
+              <div class="form-group">
+                <div class="form-label">Conta</div>
+                <select class="form-select" id="confirmConta"></select>
+              </div>
+              
+              <button class="submit-btn confirmar" id="confirmBtn">Confirmar e Criar Lançamento</button>
+              <button class="submit-btn rejeitar" id="rejectBtn" style="margin-left:12px;">Rejeitar</button>
+            </div>
+          </div>
+        </div>
+        
+        <div id="resultadoArea" style="display:none;">
+          <div class="success" style="text-align:center;">
+            <div class="icon" id="resultadoIcon">✅</div>
+            <div class="text" id="resultadoText">-</div>
+            <div class="btn" onclick="voltar()" style="margin-top:16px;">Voltar ao Painel</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+
+  <script src="auth.js"></script>
+  <script>
+    if (!requireAuth()) throw new Error('not auth');
+
+    let pendenciaId = new URLSearchParams(window.location.search).get('pendencia_id');
+    let pendencia = null;
+    let contas = [];
+
+    async function loadPendencia() {
+      if (!pendenciaId) { voltar(); return; }
+      pendencia = await apiGet('/api/ia/pendencias/' + pendenciaId);
+      if (!pendencia) { voltar(); return; }
+      
+      // Preencher dados básicos
+      document.getElementById('pendenciaTipo').textContent = 
+        pendencia.tipo === 'receita' ? 'RECEITA' : 'DESPESA';
+      document.getElementById('pendenciaTipo').className = 
+        'pendencia-tipo ' + pendencia.tipo;
+      
+      document.getElementById('pendenciaStatus').textContent = 
+        pendencia.status.toUpperCase();
+      document.getElementById('pendenciaStatus').className = 
+        'pendencia-status ' + pendencia.status;
+      
+      document.getElementById('infoDescricao').textContent = 
+        pendencia.payload_bruto?.texto || 
+        pendencia.payload_bruto?.nome_arquivo || 
+        'Entrada por IA';
+      
+      document.getElementById('infoData').textContent = 
+        new Date(pendencia.created_at).toLocaleDateString('pt-BR');
+      
+      // Mostrar sugestão se existir
+      if (pendencia.sugestao && Object.keys(pendencia.sugestao).length > 0) {
+        document.getElementById('sugestaoArea').style.display = 'block';
+        
+        const sug = pendencia.sugestao;
+        document.getElementById('sugestaoTipo').textContent = 
+          sug.tipo === 'receita' ? 'RECEITA' : 'DESPESA';
+        document.getElementById('sugestaoTipo').className = 
+          'sugestao-value-item ' + sug.tipo;
+        document.getElementById('sugestaoValor').textContent = 
+          'R$ ' + formatCurrency((sug.valor || 0));
+        
+        // Preencher formulário
+        document.getElementById('confirmDescricao').value = sug.descricao || '';
+      }
+      
+      // Carregar contas para seleção
+      contas = await apiGet('/api/contas') || [];
+      const contaSelect = document.getElementById('confirmConta');
+      contaSelect.innerHTML = '<option value="">Selecione a conta...</option>';
+      contas.forEach(c => {
+        contaSelect.innerHTML += 
+          '<option value="' + c.id + '">' + c.nome + '</option>';
+      });
+    }
+
+    async function confirmar() {
+      if (!pendencia || !pendencia.sugestao) return;
+      
+      const sug = pendencia.sugestao;
+      const conta_id = document.getElementById('confirmConta').value;
+      const descricao = document.getElementById('confirmDescricao').value.trim();
+      
+      if (!conta_id) {
+        alert('Selecione uma conta');
+        return;
+      }
+      
+      const lancamento = {
+        tipo: sug.tipo,
+        valor: parseFloat(sug.valor) || 0,
+        categoria_id: sug.categoria_id || null,
+        conta_id: conta_id,
+        data: sug.data || new Date().toISOString().slice(0,10),
+        descricao: descricao || sug.descricao || 'Lançamento via IA',
+        origem: 'ia_' + pendencia.origem
+      };
+      
+      try {
+        const result = await apiPost('/api/lancamentos', lancamento);
+        if (result) {
+          await apiPost('/api/ia/pendencias/' + pendenciaId + '/confirmar', {});
+          mostrarResultado('Lançamento criado com sucesso!', true);
+        }
+      } catch (err) {
+        alert('Erro: ' + err);
+      }
+    }
+
+    async function rejeitar() {
+      if (!pendencia) return;
+      try {
+        await apiPost('/api/ia/pendencias/' + pendenciaId + '/rejeitar', {});
+        mostrarResultado('Lançamento rejeitado', false);
+      } catch (err) {
+        alert('Erro: ' + err);
+      }
+    }
+
+    function mostrarResultado(mensagem, sucesso) {
+      document.getElementById('resultadoIcon').textContent = sucesso ? '✅' : '❌';
+      document.getElementById('resultadoText').textContent = mensagem;
+      document.getElementById('resultadoArea').style.display = 'block';
+      document.getElementById('pendenciaArea').style.display = 'none';
+    }
+
+    function voltar() {
+      window.location.href = '/dashboard';
+    }
+
+    // Event listeners
+    document.getElementById('confirmBtn').onclick = confirmar;
+    document.getElementById('rejectBtn').onclick = rejeitar;
+    document.getElementById('userMenu').onclick = logout;
+
+    loadPendencia();
+  </script>
+  <nav class="tab-bar">
+    <a href="/dashboard" class="tab-item"><div class="tab-icon">🏠</div><span>Dashboard</span></a>
+    <a href="/fechamento" class="tab-item"><div class="tab-icon">📊</div><span>Fechamento</span></a>
+    <a href="/churrasco" class="tab-item"><div class="tab-icon">🥩</div><span>Churrasco</span></a>
+    <a href="/lancamentos" class="tab-item"><div class="tab-icon">📋</div><span>Lançamentos</span></a>
+    <a href="/contas-a-pagar" class="tab-item"><div class="tab-icon">📅</div><span>A Pagar</span></a>
+  </nav>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novo Lançamento — Panela da Roça</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;510;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <script src="/js/core.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/ia.js"></script>
+  <style>
+    :root {
+      --bg: oklch(15% 0.02 40); --surface: oklch(22% 0.025 40); --fg: oklch(95% 0.01 60);
+      --muted: oklch(65% 0.02 50); --border: oklch(35% 0.03 45); --accent: oklch(62% 0.14 45);
+      --verde: oklch(55% 0.10 140); --vermelho: oklch(48% 0.16 28);
+      --font-body: 'Inter', system-ui, sans-serif; --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:var(--font-body); background:var(--bg); color:var(--fg); min-height:100vh; padding-bottom:90px; }
+    .header { background:var(--surface); border-bottom:1px solid var(--border); padding:16px 20px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:100; }
+    .btn-back { width:36px; height:36px; background:var(--bg); border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); font-size:18px; text-decoration:none; }
+    .page-title { font-size:18px; font-weight:600; }
+
+    .main { padding:16px; max-width:480px; margin:0 auto; }
+    .section { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:16px; }
+    .section-title { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; margin-bottom:12px; }
+
+    .ia-input { width:100%; min-height:80px; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--fg); font-family:var(--font-body); font-size:14px; resize:vertical; }
+    .ia-input:focus { outline:none; border-color:var(--accent); }
+
+    .form-group { margin-bottom:12px; }
+    .form-label { font-size:12px; font-weight:600; color:var(--muted); margin-bottom:4px; }
+    .form-input, .form-select { width:100%; height:44px; padding:0 12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--fg); font-family:var(--font-body); font-size:14px; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+    .btn { width:100%; height:48px; border:none; border-radius:10px; font-family:var(--font-body); font-size:15px; font-weight:600; cursor:pointer; }
+    .btn-primary { background:var(--accent); color:var(--bg); }
+    .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+
+    .sugestao-badge { display:inline-block; padding:4px 10px; border-radius:6px; font-size:12px; font-weight:600; margin-bottom:8px; }
+    .sugestao-badge.receita { background:oklch(55% 0.10 140 / 0.15); color:var(--verde); }
+    .sugestao-badge.despesa { background:oklch(48% 0.16 28 / 0.15); color:var(--vermelho); }
+
+    .exemplos { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .exemplo { padding:6px 10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-size:12px; cursor:pointer; transition:border-color .2s; }
+    .exemplo:hover { border-color:var(--accent); }
+
+    .success-msg { display:none; text-align:center; padding:40px 20px; }
+    .success-msg .icon { font-size:48px; margin-bottom:12px; }
+    .success-msg .text { font-size:18px; font-weight:600; margin-bottom:16px; }
+    .success-msg .btn { display:inline-block; padding:12px 24px; background:var(--accent); color:var(--bg); border:none; border-radius:10px; font-family:var(--font-body); font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a href="/lancamentos" class="btn-back">←</a>
+    <span class="page-title">Novo Lançamento</span>
+  </header>
+
+  <main class="main">
+    <div id="formArea">
+      <div class="section">
+        <div class="section-title">Descreva com IA</div>
+        <textarea class="ia-input" id="iaInput" placeholder="Ex: Paguei 150 reais de gás no pix ontem&#10;Ex: Comprei 20kg de picanha a 45 o quilo&#10;Ex: Vendas do almoço 1200 reais"></textarea>
+        <div class="exemplos">
+          <span class="exemplo" onclick="setExemplo('Paguei 150 de gas')">💡 Paguei 150 de gás</span>
+          <span class="exemplo" onclick="setExemplo('Vendas do almoco 1200')">💡 Vendas almoço 1200</span>
+          <span class="exemplo" onclick="setExemplo('Compra de 10kg de carne 350')">💡 10kg carne 350</span>
+          <span class="exemplo" onclick="setExemplo('Luz 280 reais')">💡 Luz 280</span>
+          <span class="exemplo" onclick="handleFoto()">📸 Anexar Foto</span>
+        </div>
+        <div id="iaStatus" style="margin-top:8px;font-size:13px;color:var(--muted)"></div>
+      </div>
+
+      <div id="sugestaoSection" class="section" style="display:none">
+        <div class="section-title">Dados do Lançamento</div>
+        <div id="sugestaoBadge"></div>
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select class="form-select" id="fTipo">
+            <option value="despesa">🔥 Despesa</option>
+            <option value="receita">💰 Receita</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Valor *</label>
+          <input class="form-input" id="fValor" inputmode="decimal" placeholder="Ex: 150,00">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Data *</label>
+            <input class="form-input" id="fData" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Forma Pagamento</label>
+            <select class="form-select" id="fFormaPagamento">
+              <option value="">Selecione...</option>
+              <option value="dinheiro">Dinheiro</option>
+              <option value="pix">PIX</option>
+              <option value="cartao_credito">Cartão Crédito</option>
+              <option value="cartao_debito">Cartão Débito</option>
+              <option value="boleto">Boleto</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descrição *</label>
+          <input class="form-input" id="fDescricao" placeholder="Descrição do lançamento">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Categoria</label>
+          <select class="form-select" id="fCategoria"></select>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btnSalvar" onclick="salvar()" disabled>Salvar</button>
+    </div>
+
+    <div class="success-msg" id="successArea">
+      <div class="icon">✅</div>
+      <div class="text" id="successText">Lançamento salvo!</div>
+      <a href="/lancamentos" class="btn">Ver Lançamentos</a>
+      <br><br>
+      <button class="btn" style="background:var(--surface);color:var(--fg);border:1px solid var(--border)" onclick="novo()">+ Novo</button>
+    </div>
+  </main>
+
+  <script>
+    if (!requireAuth()) throw new Error('not auth');
+
+    let iaTimeout;
+    let fotoBase64 = null;
+
+    async function carregarCategorias() {
+      const cats = await apiGet('/api/categorias') || [];
+      const sel = document.getElementById('fCategoria');
+      sel.innerHTML = '<option value="">Sem categoria</option>';
+      cats.forEach(c => sel.innerHTML += '<option value="' + c.id + '">' + c.nome + '</option>');
+    }
+
+    function setExemplo(t) {
+      document.getElementById('iaInput').value = t;
+      processarIA();
+    }
+
+    function validarForm() {
+      const valor = parseFloat(document.getElementById('fValor').value.replace(',', '.')) || 0;
+      const desc = document.getElementById('fDescricao').value.trim();
+      document.getElementById('btnSalvar').disabled = !(valor > 0 && desc.length > 0);
+    }
+
+    async function processarIA() {
+      const texto = document.getElementById('iaInput').value.trim();
+      const status = document.getElementById('iaStatus');
+      if (!texto) { status.textContent = ''; return; }
+
+      status.textContent = '🤖 IA analisando...';
+      const data = await askIA(texto);
+      status.textContent = '';
+
+      if (!data || data.erro) {
+        status.textContent = '⚠️ ' + (data?.erro || 'Erro');
+        return;
+      }
+
+      document.getElementById('sugestaoSection').style.display = 'block';
+      const tipo = data.tipo || 'despesa';
+      document.getElementById('fTipo').value = tipo;
+      document.getElementById('sugestaoBadge').innerHTML = '<span class="sugestao-badge ' + tipo + '">' + (tipo === 'receita' ? '💰 RECEITA' : '🔥 DESPESA') + '</span>';
+      document.getElementById('fValor').value = data.valor || '';
+      document.getElementById('fData').value = data.data || todayStr();
+      document.getElementById('fDescricao').value = data.descricao || '';
+
+      if (data.categoria_id) {
+        const sel = document.getElementById('fCategoria');
+        for (let i = 0; i < sel.options.length; i++) {
+          if (sel.options[i].value === data.categoria_id) { sel.selectedIndex = i; break; }
+        }
+      }
+      if (data.forma_pagamento) document.getElementById('fFormaPagamento').value = data.forma_pagamento;
+
+      scrollToForm();
+      validarForm();
+    }
+
+    function scrollToForm() {
+      document.getElementById('sugestaoSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    document.getElementById('iaInput').addEventListener('input', function() {
+      clearTimeout(iaTimeout);
+      iaTimeout = setTimeout(processarIA, 1200);
+    });
+    document.getElementById('fValor').addEventListener('input', validarForm);
+    document.getElementById('fDescricao').addEventListener('input', validarForm);
+
+    function handleFoto() {
+      const input = document.getElementById('fotoInput') || (() => {
+        const i = document.createElement('input');
+        i.id = 'fotoInput';
+        i.type = 'file';
+        i.accept = 'image/*';
+        i.capture = 'environment';
+        i.style.display = 'none';
+        document.body.appendChild(i);
+        i.onchange = async function() {
+          const file = this.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = function(e) { fotoBase64 = e.target.result; document.getElementById('iaStatus').textContent = '📸 Foto anexada!'; };
+          reader.readAsDataURL(file);
+        };
+        return i;
+      })();
+      input.click();
+    }
+
+    async function salvar() {
+      const tipo = document.getElementById('fTipo').value;
+      const valorStr = document.getElementById('fValor').value.replace(',', '.');
+      const valor = parseFloat(valorStr) || 0;
+      const data = document.getElementById('fData').value || todayStr();
+      const descricao = document.getElementById('fDescricao').value.trim();
+      const categoria_id = document.getElementById('fCategoria').value || null;
+      const forma_pagamento = document.getElementById('fFormaPagamento').value || null;
+
+      if (!valor || valor <= 0) { alert('Informe um valor válido'); return; }
+      if (!descricao) { alert('Informe uma descrição'); return; }
+
+      const btn = document.getElementById('btnSalvar');
+      btn.disabled = true; btn.textContent = 'Salvando...';
+
+      const body = { tipo, valor, data, descricao, categoria_id, origem: sugestaoAtual?.origem || 'manual', forma_pagamento };
+      const res = await apiPost('/api/lancamentos', body);
+
+      if (res && res.id) {
+        document.getElementById('formArea').style.display = 'none';
+        document.getElementById('successArea').style.display = 'block';
+        document.getElementById('successText').textContent = tipo === 'receita' ? '💰 Venda registrada!' : '🔥 Despesa registrada!';
+        setTimeout(() => window.location.href = '/lancamentos', 1200);
+      } else if (res?.error) {
+        alert('Erro: ' + res.error);
+        btn.disabled = false; btn.textContent = 'Salvar';
+      }
+    }
+
+    function novo() {
+      document.getElementById('formArea').style.display = 'block';
+      document.getElementById('successArea').style.display = 'none';
+      document.getElementById('iaInput').value = '';
+      document.getElementById('sugestaoSection').style.display = 'none';
+      document.getElementById('btnSalvar').disabled = true;
+      sugestaoAtual = null;
+      document.getElementById('iaInput').focus();
+    }
+
+    carregarCategorias();
+    injectTabBar();
+  </script>
+</body>
+</html>

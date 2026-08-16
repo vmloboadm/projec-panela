@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Importar CSV — Panela da Roça</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;510;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: oklch(15% 0.02 40); --surface: oklch(22% 0.025 40); --fg: oklch(95% 0.01 60); --muted: oklch(65% 0.02 50); --border: oklch(35% 0.03 45); --accent: oklch(62% 0.14 45); --verde: oklch(55% 0.10 140); --vermelho: oklch(48% 0.16 28); --font-body: 'Inter', system-ui, sans-serif; --font-mono: 'JetBrains Mono', monospace; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:var(--font-body); background:var(--bg); color:var(--fg); min-height:100vh; padding-bottom:80px; }
+    .header { background:var(--surface); border-bottom:1px solid var(--border); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
+    .main { padding:16px; max-width:480px; margin:0 auto; }
+    .section { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:16px; }
+    .section-title { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; margin-bottom:12px; }
+    .upload-area { background:var(--surface); border:2px dashed var(--border); border-radius:12px; padding:40px; text-align:center; cursor:pointer; }
+    .upload-area:hover { border-color:var(--accent); }
+    .btn { width:100%; height:48px; background:var(--accent); color:var(--bg); border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; margin-top:12px; }
+    .result-item { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); font-size:14px; }
+    .result-item:last-child { border-bottom:none; }
+    .verde { color:var(--verde); } .vermelho { color:var(--vermelho); }
+    .tab-bar { position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:8px 0 max(8px,env(safe-area-inset-bottom)); z-index:100; }
+    .tab-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 0; text-decoration:none; color:var(--muted); font-size:10px; font-weight:510; }
+    .tab-item.active { color:var(--accent); }
+    .tab-icon { font-size:20px; }
+  </style>
+</head>
+<body>
+  <header class="header"><div style="font-size:18px;font-weight:600">Importar CSV</div></header>
+  <main class="main">
+    <div class="section">
+      <div class="section-title">Vendas do PDV</div>
+      <div class="upload-area" id="uploadArea">
+        <div style="font-size:40px;margin-bottom:8px;opacity:0.6">📂</div>
+        <div style="font-size:15px;font-weight:510">Clique para enviar CSV</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Formato: data,tipo,valor,categoria,descricao,conta</div>
+      </div>
+      <input type="file" id="fileInput" accept=".csv" style="display:none">
+      <div id="preview" style="margin-top:12px;display:none">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">Arquivo selecionado: <span id="fileName" style="color:var(--fg)"></span></div>
+        <button class="btn" id="btnImport">Importar</button>
+      </div>
+    </div>
+    <div id="resultado" style="display:none" class="section">
+      <div class="section-title">Resultado</div>
+      <div class="result-item"><span>Total linhas</span><span id="rTotal">0</span></div>
+      <div class="result-item"><span>Importados</span><span id="rOK" class="verde">0</span></div>
+      <div class="result-item"><span>Erros</span><span id="rErros" class="vermelho">0</span></div>
+      <div id="detalhesErros" style="margin-top:8px;font-size:12px;color:var(--vermelho)"></div>
+    </div>
+  </main>
+  <script src="auth.js"></script>
+  <script>
+    if (!requireAuth()) throw new Error('not auth')
+    document.getElementById('uploadArea').onclick = () => document.getElementById('fileInput').click()
+    document.getElementById('fileInput').onchange = function() {
+      const file = this.files[0]
+      if (!file) return
+      document.getElementById('fileName').textContent = file.name
+      document.getElementById('preview').style.display = 'block'
+    }
+    document.getElementById('btnImport').onclick = async function() {
+      const file = document.getElementById('fileInput').files[0]
+      if (!file) return
+      const form = new FormData()
+      form.append('arquivo', file)
+      const btn = this
+      btn.disabled = true; btn.textContent = 'Importando...'
+      const res = await apiFetch('/api/importar', { method: 'POST', body: form })
+      if (!res) { btn.textContent = 'Erro'; return }
+      const data = await res.json()
+      document.getElementById('rTotal').textContent = data.total
+      document.getElementById('rOK').textContent = data.importados
+      document.getElementById('rErros').textContent = data.erros
+      if (data.detalhes_erros?.length) {
+        document.getElementById('detalhesErros').innerHTML = data.detalhes_erros.map((e: any) => `<div>Linha ${e.linha}: ${e.erro}</div>`).join('')
+      }
+      document.getElementById('resultado').style.display = 'block'
+      btn.textContent = 'Importar'
+    }
+  </script>
+  <nav class="tab-bar">
+    <a href="/dashboard" class="tab-item"><div class="tab-icon">🏠</div><span>Dashboard</span></a>
+    <a href="/fechamento" class="tab-item"><div class="tab-icon">📊</div><span>Fechamento</span></a>
+    <a href="/churrasco" class="tab-item"><div class="tab-icon">🥩</div><span>Churrasco</span></a>
+    <a href="/lancamentos" class="tab-item"><div class="tab-icon">📋</div><span>Lançamentos</span></a>
+    <a href="/contas-a-pagar" class="tab-item"><div class="tab-icon">📅</div><span>A Pagar</span></a>
+  </nav>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fechamento do Dia — Panela da Roça</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;510;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: oklch(15% 0.02 40); --surface: oklch(22% 0.025 40); --fg: oklch(95% 0.01 60);
+      --muted: oklch(65% 0.02 50); --border: oklch(35% 0.03 45); --accent: oklch(62% 0.14 45);
+      --verde: oklch(55% 0.10 140); --vermelho: oklch(48% 0.16 28);
+      --font-body: 'Inter', system-ui, sans-serif; --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-body); background: var(--bg); color: var(--fg); min-height: 100vh; padding-bottom: 80px; }
+
+    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+    .page-title { font-size: 18px; font-weight: 600; }
+    .main { padding: 16px; max-width: 480px; margin: 0 auto; }
+
+    .section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    .section-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+
+    .form-group { margin-bottom: 12px; }
+    .form-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+    .form-input { width: 100%; height: 44px; padding: 0 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--fg); font-family: var(--font-body); font-size: 14px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .btn-primary { width: 100%; height: 48px; background: var(--accent); color: var(--bg); border: none; border-radius: 10px; font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 0 max(8px, env(safe-area-inset-bottom)); z-index: 100; }
+    .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 0; text-decoration: none; color: var(--muted); font-size: 10px; font-weight: 510; }
+    .tab-item.active { color: var(--accent); }
+    .tab-icon { font-size: 20px; }
+  </style>
+</head>
+<body>
+  <header class="header"><span class="page-title">Fechamento do Dia</span></header>
+  <main class="main">
+    <div class="section">
+      <div class="section-title">Vendas</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Dinheiro</label><input class="form-input" id="vDinheiro" inputmode="decimal"></div>
+        <div class="form-group"><label class="form-label">Cartão Crédito</label><input class="form-input" id="vCredito" inputmode="decimal"></div>
+        <div class="form-group"><label class="form-label">Cartão Débito</label><input class="form-input" id="vDebito" inputmode="decimal"></div>
+        <div class="form-group"><label class="form-label">PIX</label><input class="form-input" id="vPix" inputmode="decimal"></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Operacionais</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Clientes Atendidos</label><input class="form-input" id="clientes" inputmode="numeric"></div>
+        <div class="form-group"><label class="form-label">KG Self-Service</label><input class="form-input" id="kgSS" inputmode="decimal"></div>
+        <div class="form-group"><label class="form-label">KG Carnes Churrasco</label><input class="form-input" id="kgCarne" inputmode="decimal"></div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="fecharDia()">Fechar o Dia</button>
+    <div id="resultado" style="display:none;margin-top:16px;" class="section"><div class="section-title" id="resultadoText"></div></div>
+  </main>
+  <script src="auth.js"></script>
+  <script>
+    if (!requireAuth()) throw new Error('not auth')
+    async function fecharDia() {
+      const data = {
+        data: new Date().toISOString().slice(0,10),
+        vendas_dinheiro: document.getElementById('vDinheiro').value.replace(',','.'),
+        vendas_cartao_credito: document.getElementById('vCredito').value.replace(',','.'),
+        vendas_cartao_debito: document.getElementById('vDebito').value.replace(',','.'),
+        vendas_pix: document.getElementById('vPix').value.replace(',','.'),
+        clientes_atendidos: document.getElementById('clientes').value,
+        kg_self_service: document.getElementById('kgSS').value.replace(',','.'),
+        kg_carnes_churrasco: document.getElementById('kgCarne').value.replace(',','.')
+      }
+      const res = await apiPost('/api/fechamento-dia', data)
+      const el = document.getElementById('resultado')
+      el.style.display = 'block'
+      if (res) {
+        document.getElementById('resultadoText').textContent = `✅ Dia fechado! Total: ${formatCurrency(res.total_vendas)}`
+      } else {
+        document.getElementById('resultadoText').textContent = '❌ Erro ao fechar dia'
+      }
+    }
+  </script>
+  <nav class="tab-bar">
+    <a href="/dashboard" class="tab-item"><div class="tab-icon">🏠</div><span>Dashboard</span></a>
+    <a href="/fechamento" class="tab-item"><div class="tab-icon">📊</div><span>Fechamento</span></a>
+    <a href="/churrasco" class="tab-item"><div class="tab-icon">🥩</div><span>Churrasco</span></a>
+    <a href="/lancamentos" class="tab-item"><div class="tab-icon">📋</div><span>Lançamentos</span></a>
+    <a href="/contas-a-pagar" class="tab-item"><div class="tab-icon">📅</div><span>A Pagar</span></a>
+  </nav>
+</body>
+</html>
