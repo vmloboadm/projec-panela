@@ -1,7 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useAuth, fmtCurrency } from '@/app/components/useAuth'
-import { Loading, EmptyState, Modal } from '@/app/components/Shared'
+import { EmptyState, Modal } from '@/app/components/Shared'
+import MarketTicker from '@/app/components/MarketTicker'
 import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
@@ -92,6 +93,12 @@ export default function DashboardPage() {
     enabled: !authLoading,
     refetchInterval: 60000,
   })
+  const semanaQ = useQuery({
+    queryKey: ['resumo-semana'],
+    queryFn: () => apiGet('/api/lancamentos/resumo-semana?data=' + hojeBR()),
+    enabled: !authLoading,
+    refetchInterval: 60000,
+  })
 
   async function refrescar() {
     await Promise.all([
@@ -104,6 +111,7 @@ export default function DashboardPage() {
       qc.refetchQueries({ queryKey: ['fechamento'] }),
       qc.refetchQueries({ queryKey: ['faturamento-30d'] }),
       qc.refetchQueries({ queryKey: ['configuracao'] }),
+      qc.refetchQueries({ queryKey: ['resumo-semana'] }),
     ])
     toast.success('Dados atualizados!')
   }
@@ -152,11 +160,27 @@ export default function DashboardPage() {
   const mesAnterior = resumo?.mes_anterior || null
   const contasVencer = contas.slice(0, 5)
 
+  const semana = semanaQ.data || null
+
+  const deltaMes = (atual: number, ant: number | undefined) => ant && ant > 0 ? Math.round((atual / ant - 1) * 100) : null
+  const DeltaBadge = ({ pct }: { pct: number | null }) => pct === null ? <></> : (
+    <span style={{ fontSize: 10, fontWeight: 700, color: pct >= 0 ? 'var(--verde)' : 'var(--vermelho)', background: pct >= 0 ? 'oklch(55% 0.10 140 / 0.15)' : 'oklch(55% 0.17 28 / 0.15)', borderRadius: 20, padding: '2px 7px', marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+      {pct >= 0 ? <ArrowUpCircle aria-hidden="true" size={11} /> : <ArrowDownCircle aria-hidden="true" size={11} />} {Math.abs(pct)}%
+    </span>
+  )
+
   if (!authLoading && (resumoQ.isError || evolucaoQ.isError || lancHojeQ.isError || contasQ.isError)) {
     toast.error('Erro ao carregar dados')
   }
 
-  if (loading) return <Loading />
+  if (loading) return <div style={{ display: 'grid', gap: 14 }}>
+    <div className="skeleton-line" style={{ width: 200, height: 18 }} />
+    <div className="skeleton-line" style={{ width: 300, height: 44, borderRadius: 10 }} />
+    <div className="skeleton-line" style={{ width: '100%', height: 54, borderRadius: 12 }} />
+    <div className="skeleton-card" />
+    <div className="skeleton-card" />
+    <div className="skeleton-line" style={{ width: '100%', height: 160, borderRadius: 12 }} />
+  </div>
 
   return <>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -167,9 +191,12 @@ export default function DashboardPage() {
         </div>
         <div style={{ fontSize: 12, color: 'var(--muted)' }}>{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</div>
       </div>
-      <button onClick={refrescar} className="btn" style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--fg)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
-        <RefreshCw aria-hidden="true" size={13} /> Atualizar
-      </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 5 }}><span className="live-dot" /> Ao vivo</span>
+        <button onClick={refrescar} className="btn" style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--fg)', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
+          <RefreshCw aria-hidden="true" size={13} /> Atualizar
+        </button>
+      </div>
     </div>
 
     <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
@@ -180,6 +207,38 @@ export default function DashboardPage() {
         {fechadoHoje ? <><TrendingUp aria-hidden="true" size={17} /> Ver fechamento</> : <><Clock aria-hidden="true" size={17} /> Fechar dia</>}
       </button>
     </div>
+
+    {semana && <div className="hero-semana">
+      <div className="hero-col hero-col-past">
+        <div className="hero-tag">{new Date(semana.semana_passada.data + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' })}</div>
+        {semana.semana_passada.vazio ? (
+          <div className="hero-vazio" style={{ color: 'var(--muted)' }}>Sem dados<br />{semana.semana_passada.data.slice(8, 10)}/{semana.semana_passada.data.slice(5, 7)}</div>
+        ) : (<>
+          <div className="hero-lbl">Vendas</div>
+          <div className="hero-vendas hero-past">{fmtCurrency(semana.semana_passada.vendas)}</div>
+          <div className="hero-lbl" style={{ marginTop: 8 }}>Resultado</div>
+          <div className={`hero-resultado ${semana.semana_passada.resultado >= 0 ? 'positivo' : 'negativo'}`}>{fmtCurrency(semana.semana_passada.resultado)}</div>
+        </>)}
+      </div>
+      <div className="hero-vs">
+        <div className={`hero-vs-badge ${semana.comparativo.vendas >= 0 ? 'up' : 'down'}`}>
+          {semana.comparativo.vendas >= 0 ? <ArrowUpCircle aria-hidden="true" size={16} /> : <ArrowDownCircle aria-hidden="true" size={16} />}
+          {semana.semana_passada.vendas > 0 ? Math.round(Math.abs(semana.comparativo.vendas / semana.semana_passada.vendas) * 100) : 100}%
+        </div>
+        <span style={{ fontSize: 10, color: 'var(--muted)', textAlign: 'center' }}>vs<br />semana passada</span>
+      </div>
+      <div className="hero-col">
+        <div className="hero-tag"><span className="live-dot" /> Hoje · {new Date(semana.hoje.data + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long' })}</div>
+        {semana.hoje.vazio && !fechadoHoje ? (
+          <div className="hero-vazio"><Clock aria-hidden="true" size={14} color="var(--amarelo)" /> Sem lançamentos<br />ainda hoje</div>
+        ) : (<>
+          <div className="hero-lbl">Vendas</div>
+          <div className="hero-vendas">{fmtCurrency(semana.hoje.vendas)}</div>
+          <div className="hero-lbl" style={{ marginTop: 8 }}>Resultado</div>
+          <div className={`hero-resultado ${semana.hoje.resultado >= 0 ? 'positivo' : 'negativo'}`}>{fmtCurrency(semana.hoje.resultado)}</div>
+        </>)}
+      </div>
+    </div>}
 
     <div onClick={() => router.push('/fechamento')} style={{ background: fechadoHoje ? 'oklch(55% 0.10 140 / 0.15)' : 'oklch(75% 0.15 55 / 0.15)', border: `1px solid ${fechadoHoje ? 'var(--verde)' : 'var(--amarelo)'}`, borderRadius: 12, padding: 12, marginBottom: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <div>
@@ -193,15 +252,41 @@ export default function DashboardPage() {
       <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>{fechadoHoje ? 'Ver →' : 'Fechar agora →'}</span>
     </div>
 
-    <div style={{ marginBottom: 14 }}>
-      <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 8 }}>Resumo do Dia</div>
-      <div className="summary-grid">
-        <div className="summary-card"><div className="summary-sub">Vendas Hoje</div><div className="summary-value accent">{fmtCurrency(vendasHoje)}</div></div>
-        <div className="summary-card"><div className="summary-sub">Despesas Hoje</div><div className="summary-value vermelho">{fmtCurrency(despesasHoje)}</div></div>
-        <div className="summary-card"><div className="summary-sub">Resultado</div><div className={`summary-value ${resultadoHoje >= 0 ? 'verde' : 'vermelho'}`}>{fmtCurrency(resultadoHoje)}</div></div>
-        <div className="summary-card"><div className="summary-sub">Vence em 3d</div><div className={`summary-value ${totalVencer > 0 ? 'vermelho' : 'verde'}`}>{fmtCurrency(totalVencer)}</div></div>
-      </div>
+    <div className="smart-resumo">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)' }}><Sparkles aria-hidden="true" size={11} color="var(--amarelo)" /> Resumo rápido</div>
+      {metaDiaria > 0 && (
+        <div className="smart-resumo-item">
+          <span className="smart-resumo-icon" style={{ background: acimaMeta ? 'oklch(55% 0.10 140 / 0.18)' : 'oklch(75% 0.15 55 / 0.18)' }}>{acimaMeta ? <ArrowUpCircle aria-hidden="true" size={12} color="var(--verde)" /> : <Target aria-hidden="true" size={12} color="var(--amarelo)" />}</span>
+          <span>{acimaMeta ? <><strong style={{ color: 'var(--verde)' }}>Meta batida!</strong> Vendeu <strong>{fmtCurrency(vendasHoje)}</strong> de {fmtCurrency(metaDiaria)}.</> : <>Faltam <strong style={{ color: 'var(--amarelo)' }}>{fmtCurrency(Math.max(metaDiaria - vendasHoje, 0))}</strong> pra bater a meta de {fmtCurrency(metaDiaria)}.</>}</span>
+        </div>
+      )}
+      {breakEvenHoje > 0 && (
+        <div className="smart-resumo-item">
+          <span className="smart-resumo-icon" style={{ background: acimaBreak ? 'oklch(55% 0.10 140 / 0.18)' : 'oklch(50% 0.17 28 / 0.18)' }}>{acimaBreak ? <CheckCircle2 aria-hidden="true" size={12} color="var(--verde)" /> : <Flame aria-hidden="true" size={12} color="var(--vermelho)" />}</span>
+          <span>{acimaBreak ? <>Vendas <strong style={{ color: 'var(--verde)' }}>cobrem os custos fixos</strong>.</> : <>Abaixo do break-even ({fmtCurrency(breakEvenHoje)}) — faltam <strong style={{ color: 'var(--vermelho)' }}>{fmtCurrency(Math.max(breakEvenHoje - vendasHoje, 0))}</strong>.</>}</span>
+        </div>
+      )}
+      {totalVencer > 0 && (
+        <div className="smart-resumo-item">
+          <span className="smart-resumo-icon" style={{ background: 'oklch(50% 0.17 28 / 0.18)' }}><CalendarClock aria-hidden="true" size={12} color="var(--vermelho)" /></span>
+          <span><strong style={{ color: 'var(--vermelho)' }}>{contas3d.length === 1 ? '1 conta vence' : `${contas3d.length} contas vencem`} em 3 dias</strong>: {fmtCurrency(totalVencer)}.</span>
+        </div>
+      )}
+      {estoqueBaixo.length > 0 && (
+        <div className="smart-resumo-item">
+          <span className="smart-resumo-icon" style={{ background: 'oklch(50% 0.17 28 / 0.18)' }}><Beef aria-hidden="true" size={12} color="var(--vermelho)" /></span>
+          <span>Estoque baixo: <strong style={{ color: 'var(--vermelho)' }}>{estoqueBaixo.map((c: any) => c.nome).join(', ')}</strong>.</span>
+        </div>
+      )}
+      {fechamentoPendente && (
+        <div className="smart-resumo-item">
+          <span className="smart-resumo-icon" style={{ background: 'oklch(60% 0.13 45 / 0.18)' }}><Clock aria-hidden="true" size={12} color="var(--amarelo)" /></span>
+          <span>Dia ainda não <strong>fechado</strong>.</span>
+        </div>
+      )}
     </div>
+
+    <MarketTicker />
 
     {fat30 && <div className="section" style={{ marginBottom: 14, borderColor: 'var(--accent)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -245,10 +330,10 @@ export default function DashboardPage() {
     <div style={{ marginBottom: 16 }}>
       <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 8 }}>Resumo do Mês</div>
       <div className="summary-grid">
-        <div className="summary-card"><div className="summary-sub">Faturamento</div><div className="summary-value accent">{fmtCurrency(faturamento)}</div></div>
-        <div className="summary-card"><div className="summary-sub">Despesas</div><div className="summary-value vermelho">{fmtCurrency(despesasTotais)}</div></div>
-        <div className="summary-card"><div className="summary-sub">Lucro</div><div className={`summary-value ${lucroLiquido >= 0 ? 'verde' : 'vermelho'}`}>{fmtCurrency(lucroLiquido)}</div></div>
-        <div className="summary-card"><div className="summary-sub">Margem</div><div className={`summary-value ${margem >= 0 ? 'verde' : 'vermelho'}`}>{margem}%</div></div>
+        <div className="summary-card"><div className="summary-sub">Faturamento</div><div className="summary-value accent" style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>{fmtCurrency(faturamento)}<DeltaBadge pct={deltaMes(faturamento, mesAnterior?.faturamento)} /></div></div>
+        <div className="summary-card"><div className="summary-sub">Despesas</div><div className="summary-value vermelho">{fmtCurrency(despesasTotais)}</div><div style={{ marginTop: 4, fontSize: 10, color: 'var(--muted)' }}>{Math.round(despesasTotais) > 0 ? `${Math.round(faturamento > 0 ? despesasTotais / faturamento * 100 : 0)}% do faturamento` : 'sem despesas'}</div></div>
+        <div className="summary-card"><div className="summary-sub">Lucro</div><div className={`summary-value ${lucroLiquido >= 0 ? 'verde' : 'vermelho'}`} style={{ display: 'flex', alignItems: 'flex-end', gap: 6 }}>{fmtCurrency(lucroLiquido)}<DeltaBadge pct={deltaMes(lucroLiquido, mesAnterior?.lucro_liquido)} /></div></div>
+        <div className="summary-card"><div className="summary-sub">Margem</div><div className={`summary-value ${margem >= 0 ? 'verde' : 'vermelho'}`}>{margem}%</div><div style={{ marginTop: 4, fontSize: 10, color: 'var(--muted)' }}>lucro / faturamento</div></div>
       </div>
     </div>
 
@@ -277,9 +362,9 @@ export default function DashboardPage() {
       </div>
       <div style={{ fontSize: 26, fontWeight: 700, marginTop: 4 }}>{fmtCurrency(vendasHoje)}<span style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 400 }}> / {fmtCurrency(metaDiaria)}</span></div>
       <div style={{ height: 8, background: 'var(--bg)', borderRadius: 8, overflow: 'hidden', marginTop: 8 }}>
-        <div style={{ height: '100%', borderRadius: 8, width: Math.min(vendasHoje / metaDiaria * 100, 100) + '%', background: acimaMeta
+        <div style={{ height: '100%', borderRadius: 8, transform: `scaleX(${Math.min(vendasHoje / metaDiaria, 1)})`, transformOrigin: 'left', width: '100%', background: acimaMeta
           ? 'linear-gradient(90deg, oklch(52% 0.10 140), oklch(65% 0.12 140))'
-          : 'linear-gradient(90deg, oklch(66% 0.15 45), oklch(75% 0.12 85))', transition: 'width 0.8s cubic-bezier(0.16,1,0.3,1)', boxShadow: '0 0 12px oklch(66% 0.15 45 / 0.4)' }} />
+          : 'linear-gradient(90deg, oklch(66% 0.15 45), oklch(75% 0.12 85))', transition: 'transform 0.9s cubic-bezier(0.16,1,0.3,1)', boxShadow: '0 0 12px oklch(66% 0.15 45 / 0.4)' }} />
       </div>
     </div>}
 
@@ -292,9 +377,9 @@ export default function DashboardPage() {
       </div>
       <div style={{ fontSize: 26, fontWeight: 700, marginTop: 4 }}>{fmtCurrency(breakEvenHoje)}<span style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 400 }}> /dia</span></div>
       {breakEvenHoje > 0 && <div style={{ height: 8, background: 'var(--bg)', borderRadius: 8, overflow: 'hidden', marginTop: 8 }}>
-        <div style={{ height: '100%', borderRadius: 8, width: Math.min(vendasHoje / breakEvenHoje * 100, 100) + '%', background: acimaBreak
+        <div style={{ height: '100%', borderRadius: 8, transform: `scaleX(${Math.min(vendasHoje / breakEvenHoje, 1)})`, transformOrigin: 'left', width: '100%', background: acimaBreak
           ? 'linear-gradient(90deg, oklch(52% 0.10 140), oklch(65% 0.12 140))'
-          : 'linear-gradient(90deg, oklch(50% 0.17 28), oklch(62% 0.15 45))', transition: 'width 0.8s cubic-bezier(0.16,1,0.3,1)', boxShadow: '0 0 12px oklch(50% 0.17 28 / 0.4)' }} />
+          : 'linear-gradient(90deg, oklch(50% 0.17 28), oklch(62% 0.15 45))', transition: 'transform 0.9s cubic-bezier(0.16,1,0.3,1)', boxShadow: '0 0 12px oklch(50% 0.17 28 / 0.4)' }} />
       </div>}
     </div>
 
