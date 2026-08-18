@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panela da Roça — Login</title>
+  <meta name="description" content="Acesso ao painel de gestão financeira do restaurante Panela da Roça. Controle lançamentos, fechamentos e resultados do seu dia a dia.">
+  <meta name="theme-color" content="#c95f1e">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/logo-panela-png.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Panela da Roça — Gestão Financeira">
+  <meta property="og:description" content="Painel de gestão financeira do restaurante Panela da Roça. Controle lançamentos, fechamentos e resultados.">
+  <meta property="og:image" content="/logo-panela-png.png">
+  <meta property="og:url" content="https://gestao-panela.com.br/login">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rye&family=Inter:wght@400;510;600&display=swap" rel="stylesheet">
@@ -241,6 +250,21 @@
     <div class="forgot-password">
       <a href="#" data-od-id="forgot-link">Esqueci minha senha</a>
     </div>
+
+    <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <span style="font-size:12px;color:var(--muted);font-weight:510;letter-spacing:.05em;">VISITANTE</span>
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+      </div>
+      <button type="button" id="btn-visitante" class="btn-primary" data-od-id="visitor-button" style="background:transparent;color:var(--accent);border:1px solid var(--border);">
+        Entrar como visitante
+      </button>
+      <p id="visitante-hint" style="display:none;margin-top:12px;font-size:13px;color:var(--muted);text-align:center;">
+        Modo demonstração: apenas <b style="color:var(--fg);">visualização</b>, sem edição.<br>
+        Senha: <b style="color:var(--accent);">visitante123</b>
+      </p>
+    </div>
   </div>
 
   <div class="version-badge">v1.0.0</div>
@@ -297,6 +321,39 @@
         alert('Erro de conexão com o servidor');
       }
     });
+
+    const btnVisitante = document.getElementById('btn-visitante');
+    const hint = document.getElementById('visitante-hint');
+    if (btnVisitante) {
+      btnVisitante.addEventListener('click', async function() {
+        hint.style.display = 'block';
+        btnVisitante.textContent = 'Entrando como visitante...';
+        btnVisitante.disabled = true;
+        try {
+          const res = await fetch('/api/auth/visitante', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ senha: 'visitante123' })
+          });
+          const data = await res.json();
+          if (data.error) {
+            hint.style.display = 'block';
+            hint.innerHTML = 'Erro: <b style="color:var(--vermelho-atrasado);">' + data.error + '</b>';
+            btnVisitante.textContent = 'Entrar como visitante';
+            btnVisitante.disabled = false;
+            return;
+          }
+          setAuth(data.access_token, data.user, data.refresh_token);
+          localStorage.setItem('panela_visitante', '1');
+          window.location.href = '/dashboard';
+        } catch (err) {
+          hint.style.display = 'block';
+          hint.innerHTML = 'Erro de conexão com o servidor';
+          btnVisitante.textContent = 'Entrar como visitante';
+          btnVisitante.disabled = false;
+        }
+      });
+    }
   </script>
 </body>
 </html>

@@ -4,12 +4,16 @@ function getToken() {
   return localStorage.getItem('panela_token');
 }
 
-function setToken(t) {
-  localStorage.setItem('panela_token', t);
+function isVisitante() {
+  return localStorage.getItem('panela_visitante') === '1';
 }
 
 function getUser() {
   try { return JSON.parse(localStorage.getItem('panela_user')); } catch { return null; }
+}
+
+function setToken(t) {
+  localStorage.setItem('panela_token', t);
 }
 
 function setUser(u) {
@@ -36,6 +40,11 @@ async function apiFetch(path, options = {}) {
   try {
     const res = await fetch(API_URL + path, { ...options, headers, signal: AbortSignal.timeout(15000) });
     if (res.status === 401) { clearAuth(); window.location.href = '/login'; return null; }
+    if (res.status === 403) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || 'Modo visitante: apenas visualização.');
+      return null;
+    }
     return res;
   } catch (e) {
     console.error('apiFetch error:', e);
@@ -49,19 +58,45 @@ async function apiGet(path) {
 }
 
 async function apiPost(path, body) {
+  if (isVisitante()) { alert('Modo visitante: apenas visualização.'); return null; }
   const res = await apiFetch(path, { method: 'POST', body: JSON.stringify(body) });
   return res ? res.json() : null;
 }
 
 async function apiPut(path, body) {
+  if (isVisitante()) { alert('Modo visitante: apenas visualização.'); return null; }
   const res = await apiFetch(path, { method: 'PUT', body: JSON.stringify(body) });
   return res ? res.json() : null;
 }
 
 async function apiDelete(path) {
+  if (isVisitante()) { alert('Modo visitante: apenas visualização.'); return null; }
   const res = await apiFetch(path, { method: 'DELETE' });
   return res ? res.json() : null;
 }
+
+function apiBlockedByVisitante() {
+  return isVisitante();
+}
+
+function hideEditButtons() {
+  if (isVisitante()) {
+    document.querySelectorAll('[data-acao], [data-toggle], .btn-editar, .btn-excluir, .btn-novo').forEach(el => el.style.display = 'none');
+  }
+}
+
+function showVisitanteBanner() {
+  if (isVisitante()) {
+    const b = document.createElement('div');
+    b.id = 'visitante-banner';
+    b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#c95f1e;color:#fff;text-align:center;padding:6px 12px;font-size:12px;font-weight:600;letter-spacing:.02em;';
+    b.textContent = 'MODO VISITANTE — apenas visualização. Para editar, faça login com sua conta.';
+    document.body.prepend(b);
+  }
+}
+
+showVisitanteBanner();
+document.addEventListener('DOMContentLoaded', hideEditButtons);
 
 function fmtCurrency(v) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);

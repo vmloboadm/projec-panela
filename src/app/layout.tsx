@@ -17,9 +17,16 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Panela da Roça — Gestão Financeira",
-  description: "Sistema de gestão financeira para o restaurante Panela da Roça",
+  description: "Sistema de gestão financeira para o restaurante Panela da Roça. Controle lançamentos, fechamentos e resultados.",
   manifest: "/manifest.json",
-  icons: { icon: [{ url: "/icon-192.svg", sizes: "192x192", type: "image/svg+xml" }, { url: "/icon-512.svg", sizes: "512x512", type: "image/svg+xml" }] },
+  icons: { icon: { url: "/favicon.ico", type: "image/x-icon" } },
+  openGraph: {
+    title: "Panela da Roça — Gestão Financeira",
+    description: "Painel de gestão financeira do restaurante Panela da Roça.",
+    images: ["/logo-panela-png.png"],
+    url: "https://gestao-panela.com.br",
+    type: "website",
+  },
   appleWebApp: { capable: true, title: "Panela da Roça", statusBarStyle: "black-translucent" },
 };
 
