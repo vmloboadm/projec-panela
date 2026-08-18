@@ -39,14 +39,36 @@
   <header class="header"><span class="page-title">Fechamento do Dia</span></header>
   <main class="main">
     <div class="section">
-      <div class="section-title">Vendas</div>
+      <div class="section-title">Vendas do dia</div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Dinheiro</label><input class="form-input" id="vDinheiro" inputmode="decimal"></div>
+        <div class="form-group"><label class="form-label">Dinheiro</label><input class="form-input" id="vDinheiro" inputmode="decimal" oninput="calcCaixa()"></div>
         <div class="form-group"><label class="form-label">Cartão Crédito</label><input class="form-input" id="vCredito" inputmode="decimal"></div>
         <div class="form-group"><label class="form-label">Cartão Débito</label><input class="form-input" id="vDebito" inputmode="decimal"></div>
         <div class="form-group"><label class="form-label">PIX</label><input class="form-input" id="vPix" inputmode="decimal"></div>
+        <div class="form-group"><label class="form-label">Vale Refeição</label><input class="form-input" id="vVale" inputmode="decimal"></div>
+        <div class="form-group"><label class="form-label">Delivery</label><input class="form-input" id="vDelivery" inputmode="decimal"></div>
       </div>
     </div>
+
+    <div class="section" id="sec-despesas">
+      <div class="section-title">Despesas do dia (saíram do caixa)</div>
+      <div id="despesas-lista" style="font-size:13px;color:var(--muted);">Calculando...</div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:14px;font-weight:600;">Total que saiu do caixa</span>
+        <span id="total-saidas" class="form-label" style="font-size:16px;color:var(--accent);font-family:var(--font-mono);">R$ 0,00</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Conferência do caixa</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Fundo de caixa (início)</label><input class="form-input" id="fundoCaixa" inputmode="decimal" value="0" oninput="calcCaixa()"></div>
+        <div class="form-group"><label class="form-label">Dinheiro contado (na gaveta)</label><input class="form-input" id="caixaContado" inputmode="decimal" oninput="calcCaixa()"></div>
+      </div>
+      <div id="caixa-feedback" style="display:none;margin-top:12px;padding:14px;border-radius:10px;font-size:14px;font-weight:600;text-align:center;"></div>
+      <div id="caixa-detalhe" style="display:none;margin-top:8px;font-size:12px;color:var(--muted);text-align:center;"></div>
+    </div>
+
     <div class="section">
       <div class="section-title">Operacionais</div>
       <div class="form-row">
@@ -55,32 +77,114 @@
         <div class="form-group"><label class="form-label">KG Carnes Churrasco</label><input class="form-input" id="kgCarne" inputmode="decimal"></div>
       </div>
     </div>
-    <button class="btn-primary" onclick="fecharDia()">Fechar o Dia</button>
+    <button class="btn-primary" onclick="fecharDia()" id="btnFechar">Fechar o Dia</button>
     <div id="resultado" style="display:none;margin-top:16px;" class="section"><div class="section-title" id="resultadoText"></div></div>
   </main>
   <script src="auth.js"></script>
   <script>
     if (!requireAuth()) throw new Error('not auth')
+
+    let saidasCaixa = 0
+
+    async function carregarDespesas() {
+      const data = new Date().toISOString().slice(0,10)
+      const res = await apiGet('/api/fechamento-dia/preview?data=' + data)
+      if (!res) return
+      const lista = res.despesas_caixa_lista || []
+      saidasCaixa = Math.round((res.saidas_caixa || 0) * 100) / 100
+      const el = document.getElementById('despesas-lista')
+      if (lista.length === 0) {
+        el.innerHTML = '<div style="padding:6px 0;">Nenhuma despesa retirada do caixa hoje.</div>'
+      } else {
+        el.innerHTML = lista.map(l => '<div style="display:flex;justify-content:space-between;padding:4px 0;"><span>' + (l.descricao || 'Despesa') + '</span><span style="font-family:var(--font-mono);">− ' + formatCurrency(l.valor) + '</span></div>').join('')
+      }
+      document.getElementById('total-saidas').textContent = formatCurrency(saidasCaixa)
+      if (res.ja_fechado && res.fechamento) {
+        const f = res.fechamento
+        fill(f.vendas_dinheiro, 'vDinheiro'); fill(f.vendas_cartao_credito, 'vCredito'); fill(f.vendas_cartao_debito, 'vDebito'); fill(f.vendas_pix, 'vPix'); fill(f.vendas_vale_refeicao, 'vVale'); fill(f.vendas_delivery, 'vDelivery'); fill(f.fundo_caixa, 'fundoCaixa');
+        document.getElementById('resultadoText').textContent = 'Dia ' + data + ' já fechado. Refeche se quiser atualizar os valores.'
+        document.getElementById('resultado').style.display = 'block'
+        document.getElementById('btnFechar').textContent = 'Atualizar Fechamento'
+      }
+      calcCaixa()
+    }
+
+    function fill(v, id) { if (v != null && v != 0) document.getElementById(id).value = v }
+
+    function num(id) {
+      const raw = document.getElementById(id).value || '0'
+      return parseFloat(raw.replace(',', '.')) || 0
+    }
+
+    function calcCaixa() {
+      const dinheiro = num('vDinheiro')
+      const fundo = num('fundoCaixa')
+      const contado = document.getElementById('caixaContado').value.trim()
+      if (contado === '') { hideFeedback(); return }
+      const contadoVal = parseFloat(contado.replace(',', '.')) || 0
+      const esperado = fundo + dinheiro - saidasCaixa
+      const dif = Math.round((contadoVal - esperado) * 100) / 100
+
+      const fb = document.getElementById('caixa-feedback')
+      const det = document.getElementById('caixa-detalhe')
+      fb.style.display = 'block'; det.style.display = 'block'
+
+      if (Math.abs(dif) < 0.01) {
+        fb.style.background = 'oklch(30% 0.10 140)'; fb.style.color = 'var(--verde-pago)'
+        fb.textContent = '✔️ Bateu certinho!'
+      } else if (dif < 0) {
+        fb.style.background = 'oklch(32% 0.12 32)'; fb.style.color = 'var(--vermelho-atrasado)'
+        fb.textContent = '⚠️ Faltam ' + formatCurrency(Math.abs(dif)) + ' no caixa'
+      } else {
+        fb.style.background = 'oklch(32% 0.09 80)'; fb.style.color = 'oklch(80% 0.12 80)'
+        fb.textContent = '🟡 Sobrou ' + formatCurrency(dif) + ' no caixa'
+      }
+      det.innerHTML = 'Esperado: ' + formatCurrency(esperado) + ' (fundo ' + formatCurrency(fundo) + ' + dinheiro ' + formatCurrency(dinheiro) + ' − saídas ' + formatCurrency(saidasCaixa) + ')'
+    }
+
+    function hideFeedback() {
+      document.getElementById('caixa-feedback').style.display = 'none'
+      document.getElementById('caixa-detalhe').style.display = 'none'
+    }
+
     async function fecharDia() {
       const data = {
         data: new Date().toISOString().slice(0,10),
-        vendas_dinheiro: document.getElementById('vDinheiro').value.replace(',','.'),
-        vendas_cartao_credito: document.getElementById('vCredito').value.replace(',','.'),
-        vendas_cartao_debito: document.getElementById('vDebito').value.replace(',','.'),
-        vendas_pix: document.getElementById('vPix').value.replace(',','.'),
+        vendas_dinheiro: num('vDinheiro'),
+        vendas_cartao_credito: num('vCredito'),
+        vendas_cartao_debito: num('vDebito'),
+        vendas_pix: num('vPix'),
+        vendas_vale_refeicao: num('vVale'),
+        vendas_delivery: num('vDelivery'),
+        fundo_caixa: num('fundoCaixa'),
+        caixa_contado: num('caixaContado'),
         clientes_atendidos: document.getElementById('clientes').value,
         kg_self_service: document.getElementById('kgSS').value.replace(',','.'),
         kg_carnes_churrasco: document.getElementById('kgCarne').value.replace(',','.')
       }
+      const btn = document.getElementById('btnFechar')
+      btn.disabled = true; btn.textContent = 'Fechando...'
       const res = await apiPost('/api/fechamento-dia', data)
+      btn.disabled = false; btn.textContent = data.caixa_contado ? 'Atualizar Fechamento' : 'Fechar o Dia'
       const el = document.getElementById('resultado')
       el.style.display = 'block'
       if (res) {
-        document.getElementById('resultadoText').textContent = `✅ Dia fechado! Total: ${formatCurrency(res.total_vendas)}`
+        let msg = '✅ Dia fechado! Total: ' + formatCurrency(res.total_vendas)
+        msg += ' | Lucro: ' + formatCurrency(res.lucro_bruto)
+        if (res.saidas_caixa != null) msg += ' | Saíram do caixa: ' + formatCurrency(res.saidas_caixa)
+        if (res.diferenca_caixa != null) {
+          const dif = res.diferenca_caixa
+          if (Math.abs(dif) < 0.01) msg += ' | ✔️ Caixa bateu!'
+          else if (dif < 0) msg += ' | ⚠️ Faltam ' + formatCurrency(Math.abs(dif))
+          else msg += ' | 🟡 Sobrou ' + formatCurrency(dif)
+        }
+        document.getElementById('resultadoText').textContent = msg
       } else {
         document.getElementById('resultadoText').textContent = '❌ Erro ao fechar dia'
       }
     }
+
+    carregarDespesas()
   </script>
   <nav class="tab-bar">
     <a href="/dashboard" class="tab-item"><div class="tab-icon">🏠</div><span>Dashboard</span></a>
